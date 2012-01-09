@@ -1,0 +1,37 @@
+
+/dev/pvrsrvkm             0666   system     system
+/dev/video0               0660   system     camera
+/dev/video1               0660   system     camera
+/dev/video2               0660   system     camera
+/dev/s3c-jpg              0660   system     camera
+/dev/s3c-mem              0660   system     system
+/dev/s3c-mfc              0660   system     graphics
+
+/dev/modem-evdo            0777   radio      radio
+/dev/modem_fmt            0660   radio      radio
+/dev/modem_rfs            0660   radio      radio
+/dev/s3c2410_serial3      0660   radio      radio
+/dev/block/mtdblock5      0660   radio      radio
+/dev/mtd/mtd5ro           0660   radio      radio
+
+# for Sensor HAL
+/dev/akm8973              0660   system     system
+/dev/accelerometer        0660   system     system
+
+# for GPS
+/dev/s3c2410_serial1      0600   gps        gps
+
+/dev/gsensor		  0777   system	    system
+/dev/dlsps_lsensor	0669	system	system
+/dev/mdtv*		0666	media	media
+
+#alsa nodes
+/dev/pcmC0D0c		0777	audio	audio
+/dev/pcmC0D0p		0777	audio	audio
+/dev/controlC0		0777	audio	audio
+/dev/timer		0777	audio	audio
+
+#modem
+/dev/ttyo0		0660	radio	radio
+/dev/ttyo1		0660	bluetooth	bluetooth
+

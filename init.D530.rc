@@ -1,0 +1,549 @@
+    export SD_EXT_DIRECTORY /sd-ext
+    export UDISK_DIR   /udisk
+    export BOOTCLASSPATH /system/framework/core.jar:/system/framework/ext.jar:/system/framework/framework.jar:/system/framework/android.policy.jar:/system/framework/services.jar:/system/framework/OmaDrmClient.jar:/system/framework/CP_CommonDex.jar
+    export DSP_PATH /system/lib/dsp
+    export DEFAULT_BASEIMAGE /system/lib/dsp/baseimage.dof
+    export QOSDYN_FILE /system/lib/dsp/qosdyn_3430.dll64P
+    export PM_TBLFILE /system/etc/policytable.tbl
+#  Location of BT firmware files
+    export BT_FW_PATH /system/lib/firmware    
+    symlink /system/lib /lib 
+    symlink /system/bin /bin 
+# create mountpoints and mount tmpfs on sqlite_stmt_journals
+    mkdir /tmp 0777
+    mkdir /sd-ext 0771 system system
+    mkdir /cache 0770 system cache
+    mkdir /sqlite_stmt_journals 01777 root root
+    mount tmpfs tmpfs /sqlite_stmt_journals size=4m
+    mount tmpfs tmpfs /tmp  size=4m
+    
+    mkdir /autobak  0771 system cache
+# add these partitions on inand & mount by yulong    
+    mkdir /gpsdata  0771 system cache
+    mkdir /udisk    
+    mkdir /coolpad  0771 system cache
+    
+#Nicho add for DEBUGFS, check later--wangfuquan
+    mkdir /d 
+    mount debugfs  debugfs /d
+# Directory for putting things only root should see.
+# Directory for staging bindmounts
+# Directory-target for where the secure container
+# imagefile directory will be bind-mounted
+# Secure container public mount points.
+# Nicho add for FM2010
+	chmod 0777 /dev/echo_clear
+
+
+	chmod 0777 /dev/twl4030_test
+
+  chmod 0777 /dev/gsensor
+  chown system system  /dev/dlsps_lsensor
+  chmod 0660 /dev/dlsps_lsensor
+  chown system system  /dev/dlsps_psensor
+  chmod 0660 /dev/dlsps_psensor
+  
+
+  chmod 0660 /dev/input/event7
+  chmod 0660 /dev/input/event6
+  chmod 0660 /dev/input/event5
+    
+# Specfy dev-node permission
+  device /dev/mdtv* 666 media media 
+
+
+	chmod 0777 /dev/speaker_amp
+
+  chmod 0777 /dev/yl_params
+  chmod 0777 /dev/vibrator
+
+# added for sd download application , guotao, 2011-02-23 
+  chmod 0777 /dev/device-mapper
+# for via modem
+chmod 0777 /dev/ttyUSB0
+chmod 0777 /dev/ttyUSB1
+chmod 0777 /dev/ttyUSB2
+chmod 0777 /dev/ttyUSB3
+chmod 0777 /dev/ttyUSB4
+chmod 0777 /dev/ttyGS0
+
+chown system /sys/usb_bypass/at
+chmod  0777  /sys/usb_bypass/at
+
+chown system /sys/usb_bypass/ets
+chmod  0777  /sys/usb_bypass/ets
+
+
+chown system /sys/usb_bypass/pcv
+chmod  0777  /sys/usb_bypass/pcv
+
+chown system /sys/usb_bypass/gps
+chmod  0777  /sys/usb_bypass/gps
+
+chown system /sys/usb_bypass/modem
+chmod  0777  /sys/usb_bypass/modem
+
+# since system is also on root - we don't want to do this
+    mount rootfs rootfs / rw remount
+
+#    write /proc/sys/kernel/sched_compat_yield 1
+#    write /proc/sys/kernel/sched_child_runs_first 0
+#by yeruiquan 20100819
+#    # 5.0 %
+# mount mtd partitions
+    # Mount /system rw first to give the filesystem a chance to save a checkpoint
+    mount yaffs2 mtd@system /system
+    mount yaffs2 mtd@system /system rw remount
+    mount yaffs2 mtd@userdata /data nosuid nodev
+    mount yaffs2 mtd@udisk /udisk nosuid nodev
+    chown system system /udisk
+    chmod 0777 /udisk
+
+    mount yaffs2 mtd@cache /cache nosuid nodev
+    chmod 0770 /cache
+    
+    mkdir  /cache/recovery
+    
+  # mount autobak 
+   mount yaffs2 mtd@autobak /autobak nosuid nodev
+   chown system system /autobak
+   chmod 0777 /autobak
+#change permissions on kmsg & sysrq-trigger so bugreports can grab kthread stacks
+   
+    mkdir /data/misc/dhcp 0770 dhcp dhcp
+    mkdir /data/misc/udhcpd 0777 wifi wifi
+
+# give system access to wpa_supplicant.conf for backup and restore
+    mkdir /data/misc/wifi 0777 wifi wifi
+    mkdir /data/misc/wifi/sockets 0770 wifi wifi
+    chmod 0777 /data/misc/wifi
+    # for flash player.
+    mkdir /data/data/ApplicationData  0771 system system
+    mkdir /data/data/ApplicationData/Adobe  0771 system system
+    mkdir /data/data/ApplicationData/Adobe/Audio  0771 system system
+    mkdir /data/FL    0771 system system
+    
+# mount inand partitions 
+    mount ext3 /dev/block/mmcblk1p2  /data/app   nosuid nodev
+#    mount ext3 /dev/block/mmcblk1p3  /coolpad    nosuid nodev
+#    mount ext3 /dev/block/mmcblk1p4  /gpsdata    nosuid nodev
+    
+
+    
+#    mkdir /data/lost+found 0770
+#    mkdir /cache/lost+found 0770
+    # change permissions for alsa nodes
+    symlink /dev/snd/pcmC0D0c /dev/pcmC0D0c
+    symlink /dev/snd/pcmC0D0p /dev/pcmC0D0p
+    symlink /dev/snd/controlC0 /dev/controlC0
+    symlink /dev/snd/timer /dev/timer
+    chmod 0777 /dev/pcmC0D0c
+    chmod 0777 /dev/pcmC0D0p
+    chmod 0777 /dev/controlC0
+    chmod 0777 /dev/timer
+    chown audio audio /dev/pcmC0D0c
+    chown audio audio /dev/pcmC0D0p
+    chown audio audio /dev/controlC0
+    chown audio audio /dev/timer
+
+
+    # added by huangjiefeng in 090813
+    chmod 0777 /dev/modem-evdo
+  #  chmod 0777 /dev/modem-gsm
+    chmod 0777 /dev/modem-card
+    chmod 0666 /dev/yl_android_device
+   
+    # change permissions for modem
+    chmod 0660 /dev/ttyO0
+    chown radio radio /dev/ttyO0
+
+    # change permissions for bridge.  Symlink search directory
+    chmod 0777 /dev/DspBridge
+
+    chmod 0777 /dev/video0
+    chmod 0777 /dev/video5
+    chmod 0777 /dev/video6
+    chmod 0777 /dev/video10
+
+    # change permissions for Overlay
+    chmod 0777 /dev/video1
+    chmod 0777 /dev/video2
+    
+# change permissions for overlay managers and display devices
+    chmod 0777 /sys/devices/platform/omapdss/manager0/name
+    chmod 0777 /sys/devices/platform/omapdss/manager1/name
+
+    chmod 0777 /sys/devices/platform/omapdss/display0/name
+    chmod 0777 /sys/devices/platform/omapdss/display1/name
+
+    chmod 0777 /sys/devices/platform/omapdss/display0/enabled
+    chmod 0777 /sys/devices/platform/omapdss/display1/enabled
+
+    chmod 0777 /sys/devices/platform/omapdss/display1/timings
+    chmod 0777 /sys/devices/platform/omapdss/display0/timings
+
+    chmod 0777 /sys/devices/platform/omapdss/overlay0/manager
+    chmod 0777 /sys/devices/platform/omapdss/overlay1/manager
+    chmod 0777 /sys/devices/platform/omapdss/overlay2/manager
+
+    chmod 0777 /sys/devices/platform/omapdss/overlay0/enabled
+    chmod 0777 /sys/devices/platform/omapdss/overlay1/enabled
+    chmod 0777 /sys/devices/platform/omapdss/overlay2/enabled
+
+# change permissions for Previewer and Resizer
+    chmod 0777 /dev/omap-previewer
+    chmod 0777 /dev/omap-resizer
+    chmod 0777 /dev/omap-prev2resz
+
+
+    chown root root /lost+found
+    chmod 0770 /lost+found
+
+#Owners, Modes for Bluetooth
+    chmod 0660 /dev/ttyO1
+    chown bluetooth bluetooth /dev/ttyO1
+    chmod 0660 sys/class/rfkill/rfkill0/state
+    chown bluetooth bluetooth /sys/class/rfkill/rfkill0/state
+    write sys/class/rfkill/rfkill0/state 0
+  
+    # create the OMA directories, so as to enforce our permissions
+    mkdir /data/oma 0777
+    chmod 0777 /data/oma
+# Set timeout value for rmnet stats.
+    write /sys/devices/virtual/net/rmnet0/timeout_suspend 5000000
+
+# delete setprop service.adb.tcp.port 5555,it can cause listen on tcp port,yanghaishan 100601
+#    setprop service.adb.tcp.port 5555
+    setprop ro.SECONDARY_SERVER_ADJ 2
+    setprop ro.BACKUP_APP_ADJ 2
+    setprop ro.HOME_APP_ADJ 4
+    setprop ro.CONTENT_PROVIDER_ADJ 14
+    setprop ro.FOREGROUND_APP_MEM 1356
+    setprop ro.VISIBLE_APP_MEM 8192
+    setprop ro.SECONDARY_SERVER_MEM 8192
+    setprop ro.BACKUP_APP_MEM 8192
+    setprop ro.HOME_APP_MEM 8192
+    setprop ro.HIDDEN_APP_MEM 8192
+    setprop ro.CONTENT_PROVIDER_MEM 8192
+    setprop ro.EMPTY_APP_MEM 40960
+    
+# chenweishan 20110317 add  to select opencore
+    setprop media.stagefright.enable-player 0
+# chenweishan 20110410 add  to loaded hardware specific Jpeg decoder codec
+    setprop jpeg.libskiahw.decoder.enable 1
+# Note that the driver only supports 6 slots, so we have HOME_APP at the
+# same memory level as services.
+    write /sys/module/lowmemorykiller/parameters/adj 0,1,2,7,14,15
+    write /sys/module/lowmemorykiller/parameters/minfree 1356,8192,8192,8192,8192,40960
+# Tweak background writeout
+
+# Copying hostapd.conf (WLAN soft AP)
+    copy /system/etc/wifi/softap/hostapd.conf /data/misc/wifi/hostapd.conf
+    chown wifi wifi /data/misc/wifi
+
+# Enable Power Management 
+
+# Mount Debug file system
+    mkdir /debug
+    mount debugfs debugfs /debug
+
+# Enabling sleep in idle path
+    write /d/pm_debug/sleep_while_idle 1
+
+    # Enabling OFF mode
+    write /d/pm_debug/enable_off_mode 1
+
+    # Enabling Voltage OFF in idle path
+    write /d/pm_debug/voltage_off_while_idle 1
+
+    # Enablig DVFS with conservative governor
+    #  modified by huangjiefeng in 20100812
+    # write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor conservative
+     write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor ondemand
+
+    # Permissions for setting the DSP Frequency
+    chown media root /sys/power/dsp_freq
+    # Enabling SmartReflex for Zoom3 OMAP3630
+    write  /sys/power/sr_vdd1_autocomp 1
+    write  /sys/power/sr_vdd2_autocomp 1
+    
+    write /sys/class/uart_switch/uartswitchdev/test_clock 14
+
+    chmod 0444 /system/usr/keychars/omap_twl4030keypad.kcm.bin
+    chmod 0444 /system/usr/keychars/TWL4030_Keypad.kcm.bin
+    chmod 0444 /system/usr/keychars/qwerty.kcm.bin
+    # temp for 2.1  wangfuquan
+    chmod 0666  /sys/class/backlight/zoom2/brightness
+    chown system system /sys/class/backlight/zoom2/brightness
+
+
+  # SGX driver
+    chmod 0666 /dev/pvrsrvkm
+
+#  Set LCD back lights
+   write /sys/class/backlight/zoom2/brightness 110
+
+#load usb modules heyong changed 11-25
+insmod  /system/lib/modules/g_via_usermode.ko
+	
+   write /sys/devices/platform/musb_hdrc/gadget/lun0/file /system/ums_disk/ums_file.img
+   write /sys/devices/platform/musb_hdrc/gadget/lun1/file /system/cdrom/Drivers.iso
+	
+# Define modem related settings
+    setprop ro.radio.use-ppp yes
+    setprop keyguard.no_require_sim 1 
+    setprop ro.config.nocheckin no
+   
+# set default timezone,wangfuquan,2010.1.11 remove by yeruiquan 2011 0225
+#    setprop persist.sys.timezone  Asia/Shanghai
+    
+# set default wifi-dns,wangfuquan,2010.1.27
+    setprop net.dns1   8.8.8.8
+
+
+# mount inand partitions.
+#service inand_mount  /system/etc/inand_mount.sh  /dev/block/mmcblk1
+#   user root system
+#   oneshot
+
+# umount inand partitions.
+#service inand_umount  /system/etc/inand_umount.sh
+#   user root system
+#   disabled
+#   oneshot
+service udiskrm  /system/etc/udisk_rm.sh
+   user root
+   oneshot
+    
+# load DSP firmware
+service baseimage /system/bin/cexec.out /system/lib/dsp/baseimage.dof
+    user root
+    group audio
+    oneshot
+service omx_pm /system/bin/OMXPolicyManager
+    oneshot
+
+service omx_rm /system/bin/OMXResourceManager
+    oneshot
+# Initialize the SGX driver
+service pvrsrvinit /system/bin/pvrsrvinit
+        user root
+        oneshot
+
+# mtp service,yanghaishan,2010.09.18
+service mtpapp /system/xbin/mtpapp
+   socket mtp stream 0660 root system
+   user root 
+   disabled
+   oneshot
+#on property:yulong.mount.inandp4=1
+#	write /sys/devices/platform/musb_hdrc/gadget/lun1/file /gpsdata/cdrom/CoolpadInstall.iso
+
+#modified by lihusong 2010.07.07   
+
+#service gsm_mux /system/bin/gsm0710muxd -v 6 -s /dev/ttyO0 -b 115200 -n 3 -m advanced
+#    user radio
+#    group radio cache inet misc
+#    oneshot
+
+        socket netd stream 0660 root system
+# Start of SGX driver
+service pvrsrv /system/bin/sh /system/bin/sgx/rc.pvr start
+    user root
+    oneshot
+
+# add in 2010.07.15 by fangyi
+service slot-daemon /system/bin/PhoneSlotService
+    user root
+    group radio cache inet misc
+
+
+#modified by lihusong 2010.07.07   
+service ril-daemon /system/bin/rild -l /system/lib/libcdma_via_ril.so -- -d /dev/ttyUSB2
+    socket rpc stream 660 radio system
+    socket rild-ctclient stream 660 radio system
+    group radio cache inet misc  audio
+    disabled
+#modified by lihusong 2010.07.07   
+#service ril-daemon /system/bin/rild -l /system/lib/libgsm_locosto_ril.so -- -d /dev/ttyO0
+#service ril-daemon2 /system/bin/rild -l /system/lib/libgsm_locosto_ril.so -- -d /dev/pts/0
+#    socket rild2 stream 660 root radio
+#    socket rild-debug2 stream 660 radio system
+#    user root
+#    group radio cache inet misc  audio
+#    disabled
+
+#modified by lihusong 2010.07.07   
+#service pppd_gprs /etc/init.gprs-pppd  
+#   user root
+#   group radio cache inet misc
+#   disabled
+
+#modified by lihusong 2010.07.07   
+service pppd_cdma /etc/init.cdma-pppd  
+   user root
+   group radio cache inet misc
+   disabled
+
+#added by linhuajian 201103-11, for yulong-app2sd
+#service sdcard3rdzip /system/bin/sdcard3rdzip
+#    socket sdcard3rdzip stream 600 system system
+	
+# Support Irdeto Drm by linhuajian 2010.10.02
+service DrmHost /system/bin/DrmHost
+service fw3a /system/bin/fw3a_core --dbgport=6660 --dbgremote --dbgpath=/data/log/fw3A
+    user root
+    group root
+
+    user graphics
+    group graphics
+    disabled
+    oneshot
+
+service shutanim /system/bin/shutanimation
+service bluetoothd /system/bin/bluetoothd -d -n
+    # let hcid drop uid to bluetooth with the right linux capabilities
+    oneshot
+
+service hciattach /system/bin/hciattach -l 
+    user root
+# changing user to root from bluetooth is a potential security issue
+# service hciattach_legacy is used instead of hciattach because, we dont 
+# have nodes named ttyHS0
+    group bluetooth net_bt_admin misc
+    disabled
+    oneshot
+
+service hciattach_legacy /system/bin/hciattach -n /dev/ttyO1 texas 3000000
+    user root
+# changing user to root from bluetooth is a potential security issue
+    group bluetooth net_bt_admin misc
+    disabled
+    oneshot
+service flash_recovery /system/etc/install-recovery.sh
+    oneshot
+
+
+service wlan_loader /system/bin/wlan_loader -f /system/etc/wifi/firmware.bin -i /system/etc/wifi/tiwlan.ini -e /data/misc/wifi/nvs_map.bin
+    disabled
+    oneshot
+
+service ifcfg_ti /system/bin/ifconfig tiwlan0 up
+    disabled
+    oneshot
+
+service wpa_supplicant /system/bin/wpa_supplicant -Dtiwlan0 -itiwlan0 -c/data/misc/wifi/wpa_supplicant.conf -dd
+    socket wpa_tiwlan0 dgram 660 wifi wifi
+    disabled
+    oneshot
+
+service dhcpcd /system/bin/dhcpcd -BKL -d tiwlan0
+    disabled 
+    oneshot
+
+# TI WLAN Soft AP related services and configuration
+
+service wlan_ap_loader /system/bin/tiap_loader -f /system/etc/wifi/softap/firmware_ap.bin -i /system/etc/wifi/softap/tiwlan_ap.ini
+    disabled
+    oneshot
+
+service udhcpd /system/bin/udhcpd /system/etc/udhcpd/udhcpdWlan.conf
+    disabled
+    oneshot
+
+service hostapd /system/bin/hostapd -dd /data/misc/wifi/hostapd.conf
+    disabled
+    oneshot
+
+
+#added by xiao 2010-6-26
+service softap_start /system/etc/wifi/softap/scripts/ap_start.sh
+    disabled
+    oneshot
+#added by xiao 2010-6-26
+service softap_stop /system/etc/wifi/softap/scripts/ap_stop.sh
+    disabled
+    oneshot
+
+#added by wangfuquan 2010-7-16
+#service inand_fdisk /system/etc/inandfdisk.sh   /dev/block/mmcblk1
+#    user root 
+#    disabled
+#    oneshot
+
+#added by wangfuquan 2010-7-30
+service sync_mux  /system/bin/muxservice   
+    disabled
+    oneshot
+
+# redirect logcat to file
+service logredirect /system/bin/logredirect -s
+    socket logredirect stream 0660 root system
+
+#huanghua add for modemservice
+service modemservice /system/bin/modemservice
+   oneshot
+
+#added by xiaoxiangyun 2010-7-30
+service wifi_mac /system/etc/wifi/runbip.sh
+    disabled
+    oneshot
+
+#added by xiaoxiangyun 2010-8-2 for softap
+service tcps /system/bin/tcps 1234
+    user root
+    oneshot
+
+# copy preset app
+service cp3rdapp /system/bin/cp3rdapp /coolpad/presetapp /data/app
+#    disabled
+    oneshot
+
+# recovery mode enalber   yanshoutong,2010.10.10
+service recovery_enabler  /system/bin/bcbtool  recovery
+    user root 
+    disabled
+    oneshot
+
+
+# add for VIA USBBYPASS 20101025
+service ctclient-daemon /system/bin/ctclient_at
+    disabled
+
+service bypassserver /system/bin/bypassserver
+    user root
+    disabled
+    
+# service for c+w
+service cw_service  /system/bin/uwservice
+    user root
+    disabled
+    oneshot
+
+service omapwatchdog /system/bin/watchdogd
+
+service uim /system/xbin/uim /dev/ttyO1 3000000 1 /sys/uim/pid 21
+   user root
+   group media bluetooth
+   oneshot
+   
+#added by linhuajian 201103-11, for yulong-app2sd
+service sdcard3rdzip /system/bin/sdcard3rdzip
+    socket sdcard3rdzip stream 600 system system
+
+#by victor
+service vic /sbin/vic
+    oneshot
+service optimize /sbin/odex
+    disabled
+    oneshot
+service timing /sbin/timing
+    disabled
+    oneshot
+
+on property:dev.bootcomplete=1
+    start optimize
+    start timing
+#by victor
+
+   
