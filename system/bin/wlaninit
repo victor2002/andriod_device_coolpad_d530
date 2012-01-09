@@ -1,4 +1,0 @@
-#!/system/bin/sh
-insmod /system/etc/wifi/tiwlan_drv.ko
-rmmod tiwlan_drv
-
