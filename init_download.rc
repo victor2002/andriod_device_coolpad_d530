@@ -1,0 +1,205 @@
+
+on init
+
+loglevel 3
+
+# setup the global environment
+    export PATH /sbin:/system/sbin:/system/bin:/system/xbin
+    export LD_LIBRARY_PATH /system/lib
+    export ANDROID_BOOTLOGO 1
+    export ANDROID_ROOT /system
+    export ANDROID_ASSETS /system/app
+    export ANDROID_DATA /data
+    export EXTERNAL_STORAGE /sdcard
+    export BOOTCLASSPATH /system/framework/core.jar:/system/framework/ext.jar:/system/framework/framework.jar:/system/framework/android.policy.jar:/system/framework/services.jar
+    export DSP_PATH /system/lib/dsp
+    export DEFAULT_BASEIMAGE /system/lib/dsp/baseimage.dof
+    export QOSDYN_FILE /system/lib/dsp/qosdyn_3430.dll64P
+    export PM_TBLFILE /system/etc/policytable.tbl
+
+# Location of BT firmware files
+    export BT_FW_PATH /system/lib/firmware    
+# Backward compatibility
+    symlink /system/etc /etc
+    symlink /system/lib /lib 
+    symlink /system/bin /bin 
+
+# create mountpoints and mount tmpfs on sqlite_stmt_journals
+    mkdir /sdcard 0000 system system
+    mkdir /system
+    mkdir /tmp 0777
+    mkdir /data 0771 system system
+    mkdir /cache 0770 system cache
+    mkdir /config 0500 root root
+    mkdir /sqlite_stmt_journals 01777 root root
+    mount tmpfs tmpfs /sqlite_stmt_journals size=4m
+    mkdir /autobak   0771 system cache
+# add these partitions on inand 
+    mkdir /gpsdata  0771 system cache
+    mkdir /udisk  
+    mkdir /coolpad  0771 system cache
+    
+
+# since system is also on root - we don't want to do this
+    mount rootfs rootfs / ro remount
+
+    write /proc/sys/kernel/panic_on_oops 1
+    write /proc/sys/kernel/hung_task_timeout_secs 0
+    write /proc/cpu/alignment 4
+    write /proc/sys/kernel/sched_latency_ns 10000000
+    write /proc/sys/kernel/sched_wakeup_granularity_ns 2000000
+#    write /proc/sys/kernel/sched_compat_yield 1
+#    write /proc/sys/kernel/sched_child_runs_first 0
+
+# mount mtd partitions
+    # Mount /system rw first to give the filesystem a chance to save a checkpoint
+    mount yaffs2 mtd@system /system
+    mount yaffs2 mtd@system /system ro remount
+
+    # We chown/chmod /data again so because mount is run as root + defaults
+    mount yaffs2 mtd@userdata /data nosuid nodev
+    chown system system /data
+    chmod 0771 /data
+
+    # Same reason as /data above
+    mount yaffs2 mtd@cache /cache nosuid nodev
+    chown system cache /cache
+    chmod 0770 /cache
+    
+    # This may have been created by the recovery system with odd permissions
+    chown system system /cache/recovery
+    chmod 0770 /cache/recovery
+
+  # mount autobak 
+   mount yaffs2 mtd@autobak /autobak nosuid nodev
+   chown system system /autobak
+   chmod 0770 /autobak
+   
+  # limit cdrom file permission:/gpsdata/cdrom/xxx.iso
+    chown system system /coolpad
+    chmod 0777       /coolpad
+  # assume other dir owner & mode
+    chown system system /gpsdata
+    chmod 0777       /gpsdata
+    chown system system /gpsdata/cdrom
+    chmod 0500       /gpsdata/cdrom
+    
+    chown system system /data/app
+    chmod 0771       /data/app
+    
+ 
+    # double check the perms, in case lost+found already exists, and set owner
+    chown root root /lost+found
+    chmod 0770 /lost+found
+#    chown root root /data/lost+found
+#    chmod 0770 /data/lost+found
+#    chown root root /cache/lost+found
+#    chmod 0770 /cache/lost+found
+
+
+on boot
+# basic network init
+    ifup lo
+    hostname localhost
+    domainname localdomain
+
+# set RLIMIT_NICE to allow priorities from 19 to -20
+    setrlimit 13 40 40
+
+# Set timeout value for rmnet stats.
+    write /sys/devices/virtual/net/rmnet0/timeout_suspend 5000000
+
+# Enabling Power Management features
+
+    # Enabling sleep in idle path
+    write /sys/power/sleep_while_idle 1
+
+    # Enabling OFF mode
+    write /sys/power/enable_off_mode 1
+
+    # Enabling Voltage OFF in idle path
+    write /sys/power/voltage_off_while_idle 1
+
+    # Enablig DVFS with conservative governor
+    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor performance
+    
+    # Enabling SmartReflex for Zoom3 OMAP3630
+    write  /sys/power/sr_vdd1_autocomp 1
+    write  /sys/power/sr_vdd2_autocomp 1
+
+    # Permissions for System Server and daemons.
+    chmod 0666  /sys/class/backlight/zoom2/brightness
+    chown system system /sys/class/timed_output/vibrator/enable
+    chown system system /sys/class/leds/keyboard-backlight/brightness
+    chown system system /sys/class/backlight/zoom2/brightness
+
+    chown root radio /proc/cmdline
+
+#  Set LCD back lights
+	write /sys/class/backlight/zoom2/brightness 30
+	
+#  insmod for adb device by yanghaisan	
+  insmod /system/lib/modules/g_cooldroid.ko
+
+
+    class_start default
+
+## Daemon processes to be run by init.
+service console /system/bin/sh
+    console
+
+
+service servicemanager /system/bin/servicemanager
+    user system
+    critical
+    onrestart restart zygote
+    onrestart restart media
+
+#partition and format
+#service inand_fdisk /system/etc/inandfdisk.sh  /dev/block/mmcblk1
+#    disabled
+#    oneshot
+
+# umount inand mount point
+#service inand_umount /system/etc/inand_umount.sh  
+#    disabled
+#    oneshot
+
+#service inand_format1  /system/etc/inand_mkfs.sh  /dev/block/mmcblk1  1
+#    disabled
+#    oneshot
+
+#service inand_format2  /system/etc/inand_mkfs.sh  /dev/block/mmcblk1  2
+#    disabled
+#    oneshot
+
+#service inand_format3  /system/etc/inand_mkfs.sh  /dev/block/mmcblk1  3
+#    disabled
+#    oneshot
+
+#service inand_format4  /system/etc/inand_mkfs.sh  /dev/block/mmcblk1  4
+#    disabled
+#    oneshot
+
+#service inand_mount1  /system/etc/inand_mount.sh  /dev/block/mmcblk1  1
+#    disabled
+#    oneshot
+
+#service inand_mount2  /system/etc/inand_mount.sh  /dev/block/mmcblk1  2
+#    disabled
+#    oneshot
+
+#service inand_mount3  /system/etc/inand_mount.sh  /dev/block/mmcblk1  3
+#    disabled
+#    oneshot
+
+#service inand_mount4  /system/etc/inand_mount.sh  /dev/block/mmcblk1  4
+#    disabled
+#    oneshot
+    
+service download_svc  /system/bin/pdownloadtool
+    oneshot
+
+#service inand_perm  /system/etc/inand_perm.sh
+#    disabled
+#    oneshot
