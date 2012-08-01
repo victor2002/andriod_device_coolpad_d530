@@ -15,3 +15,6 @@ ro.media.dec.aud.wma.enabled=1
 ro.media.dec.vid.wmv.enabled=1
 dalvik.vm.heapsize=24m
 ro.kernel.android.gps=/dev/ttyUSB4
+persist.sys.timezone=Asia/Shanghai
+ro.cdma.home.operator.numeric=46003
+ro.cdma.home.operator.alpha=ChinaTeleom
