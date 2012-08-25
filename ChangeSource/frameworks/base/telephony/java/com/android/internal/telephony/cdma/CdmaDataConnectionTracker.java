@@ -1562,16 +1562,16 @@ public final class CdmaDataConnectionTracker extends DataConnectionTracker {
         } else {
             canSetPreferApn = false;
         }
-        Log.d(LOG_TAG,"canSetPreferApn="+canSetPreferApn+",count="+cursor.getCount());
+        if (DBG) Log.d(LOG_TAG,"canSetPreferApn="+canSetPreferApn+",count="+cursor.getCount());
         if (canSetPreferApn && cursor.getCount() > 0) {
             int pos;
             cursor.moveToFirst();
             pos = cursor.getInt(cursor.getColumnIndexOrThrow(Telephony.Carriers._ID));
             for(ApnSetting p:allApns) {
-                Log.d(LOG_TAG,"p.id="+p.id+",pos="+pos);
+                if (DBG) Log.d(LOG_TAG,"p.id="+p.id+",pos="+pos);
                 if (p.id == pos && p.canHandleType(mRequestedApnType)) {
                     cursor.close();
-                    Log.d(LOG_TAG,"get prefer p.id="+p.id+",pos="+pos);
+                    if (DBG) Log.d(LOG_TAG,"get prefer p.id="+p.id+",pos="+pos);
                     return p;
                 }
             }

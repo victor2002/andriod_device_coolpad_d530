@@ -71,6 +71,7 @@ import static android.telephony.SmsManager.RESULT_ERROR_FDN_CHECK_FAILURE;
 public abstract class SMSDispatcher extends Handler {
     private static final String TAG = "SMS";
     private static final String SEND_NEXT_MSG_EXTRA = "SendNextMsg";
+    protected static final boolean DBG = false;
 
     /** Default checking period for SMS sent without user permit */
     private static final int DEFAULT_SMS_CHECK_PERIOD = 3600000;
@@ -154,10 +155,10 @@ public abstract class SMSDispatcher extends Handler {
 
             public void onClick(DialogInterface dialog, int which) {
                 if (which == DialogInterface.BUTTON_POSITIVE) {
-                    Log.d(TAG, "CP_COMM: click YES to send out sms");
+                    if (DBG) Log.d(TAG, "CP_COMM: click YES to send out sms");
                     sendMessage(obtainMessage(EVENT_SEND_CONFIRMED_SMS));
                 } else if (which == DialogInterface.BUTTON_NEGATIVE) {
-                    Log.d(TAG, "CP_COMM: click NO to stop sending");
+                    if (DBG) Log.d(TAG, "CP_COMM: click NO to stop sending");
                     sendMessage(obtainMessage(EVENT_STOP_SENDING));
                 }
             }
@@ -219,7 +220,7 @@ public abstract class SMSDispatcher extends Handler {
         {
           if (paramIntent.getAction().equals("com.android.internal.telephony.SMSDispatcher.DISPATCH_TIMOUEOUT"))
           {
-            Log.e("SMS", "CP_COMM: EVENT_SMS_DISPATCH_TIMEOUT --");
+            if (DBG) Log.e("SMS", "CP_COMM: EVENT_SMS_DISPATCH_TIMEOUT --");
             Message localMessage = SMSDispatcher.this.obtainMessage(EVENT_SMS_DISPATCH_TIMEOUT);//2.2 is 11, 2.3 is 13
             Bundle localBundle = paramIntent.getExtras();
             localMessage.arg1 = localBundle.getInt("refNumber");
@@ -306,7 +307,7 @@ public abstract class SMSDispatcher extends Handler {
         private boolean isUnderLimit(ArrayList<Long> sent, int smsWaiting) {
             Long ct =  System.currentTimeMillis();
 
-            Log.d(TAG, "CP_COMM: SMS send size=" + sent.size() + "time=" + ct);
+            if (DBG) Log.d(TAG, "CP_COMM: SMS send size=" + sent.size() + "time=" + ct);
 
             while (sent.size() > 0 && (ct - sent.get(0)) > mCheckPeriod ) {
                     sent.remove(0);
@@ -360,7 +361,7 @@ public abstract class SMSDispatcher extends Handler {
         IntentFilter intentfilter1 = new IntentFilter();
         intentfilter1.addAction("com.android.internal.telephony.SMSDispatcher.DISPATCH_TIMOUEOUT");
         mContext.registerReceiver(mTimeoutReceiver, intentfilter1);
-        Log.d("SMS", "SMSDispatcher end and begin ProcessRawMessage");
+        if (DBG) Log.d("SMS", "SMSDispatcher end and begin ProcessRawMessage");
         sendMessage(obtainMessage(EVENT_SMS_PROCESS_RAW)); //14
     }
 
@@ -395,7 +396,7 @@ public abstract class SMSDispatcher extends Handler {
           //Log.d("SMS", "CP_COMM: dispatchTimeoutMessage lDelayTime = " + lDelayTime);
           if (lDelayTime != 0x7fffffffL)
           {
-              Log.d("SMS", "CP_COMM: dispatchTimeoutMessage end and begin ProcessRawMessage");
+              if (DBG) Log.d("SMS", "CP_COMM: dispatchTimeoutMessage end and begin ProcessRawMessage");
               localMessage = obtainMessage(EVENT_SMS_PROCESS_RAW); //12
               sendMessage(localMessage);
               return;
@@ -439,13 +440,13 @@ public abstract class SMSDispatcher extends Handler {
           Log.d("SMS", "CP_COMM: dispatchTimeoutMessage lDelayTime = " + lDelayTime);
           if (lDelayTime != 0x7fffffffL)
           {
-              Log.d("SMS", "CP_COMM: dispatchTimeoutMessage end and begin ProcessRawMessage");
+              if (DBG) Log.d("SMS", "CP_COMM: dispatchTimeoutMessage end and begin ProcessRawMessage");
               localMessage = obtainMessage(EVENT_SMS_PROCESS_RAW); //12
               break;
           }
           if (currenttimemillis - ldate <= DEFAULT_SMS_DISPATCH_TIMOUEOUT)
             break;
-          Log.d("SMS", "CP_COMM: dispatchTimeoutMessage alNeedDispatchRef add ref = " + refnum);
+          if (DBG) Log.d("SMS", "CP_COMM: dispatchTimeoutMessage alNeedDispatchRef add ref = " + refnum);
           localArrayList.add(Integer.valueOf(refnum));
           //int j = 1;
           //continue;
@@ -455,7 +456,7 @@ public abstract class SMSDispatcher extends Handler {
           //for(Iterator iterator = localArrayList.iterator(); iterator.hasNext(); )
           {
             int ref = ((Integer)localIterator.next()).intValue();
-            Log.d("SMS", "dispatchTimeoutMessage delete sms refnum = " + ref);
+            if (DBG) Log.d("SMS", "dispatchTimeoutMessage delete sms refnum = " + ref);
             stringbuilder = new StringBuilder("reference_number =");
             stringbuilder.append(ref);
             //mResolver.delete(this.mRawUri, stringbuilder.toString(), null);
@@ -466,7 +467,7 @@ public abstract class SMSDispatcher extends Handler {
         {
           if (localCursor != null)
           localCursor.close();
-          Log.d("SMS", "CP_COMM: dispatchTimeoutMessage lDelayTime = " + lDelayTime);
+          if (DBG) Log.d("SMS", "CP_COMM: dispatchTimeoutMessage lDelayTime = " + lDelayTime);
           if (lDelayTime != 0x7fffffffL)
           {
           Log.d("SMS", "CP_COMM: dispatchTimeoutMessage end and begin ProcessRawMessage");
@@ -541,7 +542,7 @@ public abstract class SMSDispatcher extends Handler {
             if((127 == sms.getProtocolIdentifier() || 124 == sms.getProtocolIdentifier()) ) // && 246 == sms.getDataCodingScheme())
             {
                 String s = IccUtils.bytesToHexString(sms.getPdu());
-                Log.d("SMS", "CP_COMM: This is a ppdownload New SMS Message");
+                if (DBG) Log.d("SMS", "CP_COMM: This is a ppdownload New SMS Message");
                 mCm.sendEnvelope(s, null);
                 return; /* Loop/switch isn't completed */
             }
@@ -1084,11 +1085,11 @@ public abstract class SMSDispatcher extends Handler {
         map.put("smsc", smsc);
         map.put("pdu", pdu);
 
-        Log.d("SMS", (new StringBuilder()).append("CP_COMM: SMSDispatcher sendRawPdu, pdu = ").append(pdu).toString());
+        if (DBG) Log.d("SMS", "CP_COMM: SMSDispatcher sendRawPdu, pdu = " + pdu);
         SmsTracker tracker = new SmsTracker(map, sentIntent,
                 deliveryIntent);
         int ss = mPhone.getServiceState().getState();
-        Log.d("SMS", (new StringBuilder()).append("CP_COMM: SMSDispatcher sendRawPdu, ss = ").append(ss).toString());
+        if (DBG) Log.d("SMS", (new StringBuilder()).append("CP_COMM: SMSDispatcher sendRawPdu, ss = ").append(ss).toString());
 
         if (ss != ServiceState.STATE_IN_SERVICE) {
             handleNotInService(ss, tracker);
@@ -1096,7 +1097,7 @@ public abstract class SMSDispatcher extends Handler {
             String appName = getAppNameByIntent(sentIntent);
             if (mCounter.check(appName, SINGLE_PART_SMS)) {
                 sendSms(tracker);
-                Log.d("SMS", (new StringBuilder()).append("CP_COMM: SMSDispatcher send result ").append(tracker.mSendResult).toString());
+                if (DBG) Log.d("SMS", (new StringBuilder()).append("CP_COMM: SMSDispatcher send result ").append(tracker.mSendResult).toString());
             } else {
                 sendMessage(obtainMessage(EVENT_POST_ALERT, tracker));
             }
@@ -1325,7 +1326,7 @@ public abstract class SMSDispatcher extends Handler {
 
     public int dispatchParam(int i, int j, int k)
     {
-        Log.i("SMS", (new StringBuilder()).append("CP_COMM: dispatchSmsParam. state: ").append(k).toString());
+        if (DBG) Log.i("SMS", "CP_COMM: dispatchSmsParam. state: "+k);
         //if(PhoneModeManager.getPreferredPhoneId() == mPhone.getPhoneId())
         {
             Intent intent = new Intent("android.provider.Telephony.SMS_PARAM_ON_ICC_ACTION");
@@ -1343,15 +1344,15 @@ public abstract class SMSDispatcher extends Handler {
         return -1;
     }
 
-    public int dispatchParamPb(int i, int j, int k)
+    public int dispatchParamPb(int nTotal, int nUsed, int nState)
     {
-        Log.i("SMS", (new StringBuilder()).append("CP_COMM: dispatchParamPb. state: ").append(k).toString());
+        if (DBG) Log.i("SMS", "CP_COMM: dispatchParamPb. state: " + nState+",total="+nTotal+",nUsed="+nUsed);
         //if(PhoneModeManager.getPreferredPhoneId() == mPhone.getPhoneId())
         {
             Intent intent = new Intent("android.provider.Telephony.PB_PARAM_ON_ICC_ACTION");
-            intent.putExtra("total", i);
-            intent.putExtra("used", j);
-            intent.putExtra("state", k);
+            intent.putExtra("total", nTotal);
+            intent.putExtra("used", nUsed);
+            intent.putExtra("state", nState);
             dispatch(intent, null);
         }
         //Intent intent1 = new Intent("yulong.provider.Telephony.DUAL_PB_PARAM_ON_ICC_ACTION");
@@ -1363,7 +1364,7 @@ public abstract class SMSDispatcher extends Handler {
         return -1;
     }
 
-  protected void dispatchPdus(byte[][] paramArrayOfByte, int paramInt)
+  protected void dispatchPdus(byte[][] paramArrayOfByte, int ParseResult)
   {
     //int i = 0;
 
@@ -1373,13 +1374,19 @@ public abstract class SMSDispatcher extends Handler {
     {
       //i++;
       //break;
-      Log.i("SMS", "CP_COMM: dispatchPdus.");
+      if (DBG) Log.i("SMS", "CP_COMM: dispatchPdus. new flag"+ParseResult);
       //if (PhoneModeManager.getPreferredPhoneId() == this.mPhone.getPhoneId())
       {
-        Intent localIntent1 = new Intent("android.provider.Telephony.SMS_RECEIVED");
-        localIntent1.putExtra("pdus", paramArrayOfByte);
-        localIntent1.putExtra("ParseResult", paramInt);
-        dispatch(localIntent1, "android.permission.RECEIVE_SMS");
+        //Intent intent = new Intent(Intents.SMS_RECEIVED_ACTION);
+        Intent intent = new Intent("android.provider.Telephony.SMS_RECEIVED");
+        intent.putExtra("pdus", paramArrayOfByte);
+        intent.putExtra("ParseResult", ParseResult);
+	    intent.putExtra("dispatchPdusOnIcc", 0);
+        //if (mPhone.getIccState(1))
+	    //    localIntent1.putExtra("ReceiveALLSMS", 1);
+	    //  else
+	    //    localIntent1.putExtra("ReceiveALLSMS", 0);
+        dispatch(intent, "android.permission.RECEIVE_SMS");
       }
       //Intent localIntent2 = new Intent("yulong.provider.Telephony.DUAL_SMS_RECEIVED");
       //localIntent2.putExtra("pdus", paramArrayOfByte);
@@ -1391,13 +1398,14 @@ public abstract class SMSDispatcher extends Handler {
 
     protected void dispatchPdusOnIcc(byte abyte0[][], int i, int j)
     {
-        Log.i("SMS", (new StringBuilder()).append("CP_COMM: dispatchPdusOnIcc. index=").append(i).toString());
+        if (DBG) Log.i("SMS", "CP_COMM: dispatchPdusOnIcc. index="+i);
         //if(PhoneModeManager.getPreferredPhoneId() == mPhone.getPhoneId())
         {
-            Intent intent = new Intent("android.provider.Telephony.SMS_ON_ICC_RECEIVED");
+            Intent intent = new Intent(Intents.SMS_RECEIVED_ACTION);
             intent.putExtra("pdus", abyte0);
             intent.putExtra("index", i);
             intent.putExtra("status", j);
+	        intent.putExtra("dispatchPdusOnIcc", 1);
             dispatch(intent, "android.permission.RECEIVE_SMS");
         }
         //Intent intent1 = new Intent("yulong.provider.Telephony.DUAL_SMS_ON_ICC_RECEIVED");

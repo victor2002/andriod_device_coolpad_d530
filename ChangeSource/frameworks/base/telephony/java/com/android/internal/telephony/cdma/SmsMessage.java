@@ -586,18 +586,24 @@ public class SmsMessage extends SmsMessageBase {
         DataInputStream dis = new DataInputStream(new ByteArrayInputStream(pdu));
         SmsEnvelope env = new SmsEnvelope();
         int bearerDataLength = 0;
+        boolean bDebugFlag = false;
         //CdmaSmsAddress addr = new CdmaSmsAddress();
         //CdmaSmsSubaddress subAddr = new CdmaSmsSubaddress();
 
         mPdu = pdu;
-        Log.d("CDMA", "enter CDMA SMS parsePdu");
+        if (bDebugFlag) Log.d("CDMA", "enter CDMA SMS parsePdu");
 
         try {
             env.messageType = dis.readByte();
 
             while (dis.available() > 0) {
                 int parameterId = dis.readByte();
-                //int parameterLen = dis.readByte();
+                int parameterLen = dis.readByte();
+
+                if (parameterLen < 0)
+                {
+                    parameterLen += 256;
+                }
                 //byte[] parameterData = new byte[parameterLen];
 
                 switch (parameterId) {
@@ -607,7 +613,7 @@ public class SmsMessage extends SmsMessageBase {
                         // service access point is sending or should receive
                         // this message
                         //
-                        byte parameterLen = dis.readByte();
+                        //byte parameterLen = dis.readByte();
 
                         env.teleService = 0xffff & dis.readShort() ;//dis.readUnsignedShort();
                         Log.i(LOG_TAG, "teleservice = " + env.teleService);
@@ -617,13 +623,16 @@ public class SmsMessage extends SmsMessageBase {
                         // 16 bit parameter that identifies type of service as
                         // in 3GPP2 C.S0015-0 Table 3.4.3.2-1
                         //
-                        parameterLen = dis.readByte();
+                        //parameterLen = dis.readByte();
+                        if (bDebugFlag) Log.i("CDMA", "SERVICE_CATEGORY: " + parameterLen);
                         env.serviceCategory = dis.readShort();//dis.readUnsignedShort();
                         break;
                     case ORIGINATING_ADDRESS://2
+                        if (bDebugFlag) Log.i("CDMA", "ORIGINATING_ADDRESS: ");
                     case DESTINATION_ADDRESS://4
                         CdmaSmsAddress addr;// = new CdmaSmsAddress();
-                        parameterLen = dis.readByte();
+                        //parameterLen = dis.readByte();
+                        if (bDebugFlag) Log.i("CDMA", "DESTINATION_ADDRESS: " + parameterLen);
                         byte[] parameterData = new byte[parameterLen];
                         dis.read(parameterData, 0, parameterLen);
                         addr = parseCdmaAddress(parameterData, parameterLen);
@@ -687,10 +696,12 @@ public class SmsMessage extends SmsMessageBase {
                         */
                         break;
                     case ORIGINATING_SUB_ADDRESS://3
+                        if (bDebugFlag) Log.i("CDMA", "ORIGINATING_SUB_ADDRESS: ");
                     case DESTINATION_SUB_ADDRESS://5
-                        parameterLen = dis.readByte();
+                        //parameterLen = dis.readByte();
                         parameterData = new byte[parameterLen];
                         dis.read(parameterData, 0, parameterLen);
+                        if (bDebugFlag) Log.i("CDMA", "DESTINATION_SUB_ADDRESS: " + parameterLen);
                         //BitwiseInputStream subAddrBis = new BitwiseInputStream(parameterData);
                         //subAddr.type = subAddrBis.read(3);
                         //subAddr.odd = subAddrBis.readByteArray(1)[0];
@@ -704,7 +715,8 @@ public class SmsMessage extends SmsMessageBase {
                         //subAddr.origBytes = subdata;
                         break;
                     case BEARER_REPLY_OPTION://6
-                        parameterLen = dis.readByte();
+                        //parameterLen = dis.readByte();
+                        if (bDebugFlag) Log.i("CDMA", "BEARER_REPLY_OPTION: " + parameterLen);
                         //parameterData = new byte[parameterLen];
                         //dis.read(parameterData, 0, parameterLen);
                         //BitwiseInputStream replyOptBis = new BitwiseInputStream(parameterData);
@@ -712,7 +724,8 @@ public class SmsMessage extends SmsMessageBase {
                         env.bearerReply = dis.readByte();
                         break;
                     case CAUSE_CODES://7
-                        parameterLen = dis.readByte();
+                        //parameterLen = dis.readByte();
+                        if (bDebugFlag) Log.i("CDMA", "CAUSE_CODES: " + parameterLen);
                         //parameterData = new byte[parameterLen];
                         //dis.read(parameterData, 0, parameterLen);
                         //BitwiseInputStream ccBis = new BitwiseInputStream(parameterData);
@@ -723,7 +736,8 @@ public class SmsMessage extends SmsMessageBase {
                         env.causeCode = dis.readByte();
                         break;
                     case BEARER_DATA://8
-                        parameterLen = dis.readByte();
+                        //parameterLen = dis.readByte();
+                        if (bDebugFlag) Log.i("CDMA", "BEARER_DATA: " + parameterLen);
                         env.bearerData = new byte[parameterLen];
                         dis.read(env.bearerData, 0, parameterLen);
                         //env.bearerData = parameterData;
@@ -746,9 +760,9 @@ public class SmsMessage extends SmsMessageBase {
         //env.origSubaddress = subAddr;
         mEnvelope = env;
 
-        if (bearerDataLength > 0) 
+        if (bearerDataLength > 0)
         {
-            //if (DBG) Log.d("CDMA", "bearerDataLength: " + bearerDataLength);
+            if (bDebugFlag) Log.d("CDMA", "bearerDataLength: " + bearerDataLength);
             parseSms();
         }
     }
@@ -875,7 +889,7 @@ public class SmsMessage extends SmsMessageBase {
 
         if (originatingAddress != null) {
             originatingAddress.address = new String(originatingAddress.origBytes);
-            Log.d(LOG_TAG, "SMS originating address: "
+            if (Config.LOGV) Log.d(LOG_TAG, "SMS originating address: "
                     + originatingAddress.address);
         }
 

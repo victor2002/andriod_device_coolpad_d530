@@ -331,6 +331,8 @@ public final class CdmaCallTracker extends CallTracker {
     //+
     private void dumpState()
     {
+	    if (DBG_POLL == false)
+		    return;
         Log.i("CDMA", (new StringBuilder()).append("Phone State:").append(state).toString());
         Log.i("CDMA", (new StringBuilder()).append("Ringing call: ").append(ringingCall.toString()).toString());
         List list = ringingCall.getConnections();

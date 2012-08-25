@@ -300,7 +300,7 @@ public class CDMAPhone extends PhoneBase {
     public void conference() throws CallStateException {
         // three way calls in CDMA will be handled by feature codes
         //Log.e(LOG_TAG, "conference: not possible in CDMA");
-        Log.d("CDMA", "three way calls in CDMA will be handled");
+        if (DBG) Log.d("CDMA", "three way calls in CDMA will be handled");
         mCT.conference();
     }
 
@@ -1135,6 +1135,26 @@ public class CDMAPhone extends PhoneBase {
         return mRuimSmsInterfaceManager;
     }
 
+    public boolean getIccState(int i)
+    {
+        boolean flag;
+        if(i == 0)
+        {
+        	  //get icc state of ADN
+            if (DBG) Log.d("CDMA", "getIccState(), ICC_ID_PB "+mRuimRecords.bCardAdnInited);
+            flag = mRuimRecords.bCardAdnInited;
+        } else if(i == 1)
+        {
+        	  //get icc state of SMS	
+            if (DBG) Log.d("CDMA", "getIccState(), ICC_ID_SMS "+mRuimRecords.bCardSmsInited);
+            flag = mRuimRecords.bCardSmsInited;
+        } else
+        {
+            if (DBG) Log.d("CDMA", "getIccState()"+i);
+            flag = false;
+        }
+        return flag;
+    }
     /**
      * Retrieves the IccPhoneBookInterfaceManager of the CDMAPhone
      */

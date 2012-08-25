@@ -97,9 +97,9 @@ public class RuimSmsInterfaceManager extends IccSmsInterfaceManager {
                                 used = ai1[0];
                                 total = ai1[1];
                                 mLock.notifyAll();
-                                Log.d("CDMA", (new StringBuilder()).append("mCardSmsUsed:").append(used).append(";mCardSmsMax:").append(total).toString());
+                                if (DBG) Log.d("CDMA", (new StringBuilder()).append("mCardSmsUsed:").append(used).append(";mCardSmsMax:").append(total).toString());
                             } catch (Throwable throwable) {
-                                Log.e(LOG_TAG, "Cannot load Sms param");
+                                if (DBG) Log.e(LOG_TAG, "Cannot load Sms param");
                                 used = 0;
                                 total = 0;
                             }
@@ -116,7 +116,7 @@ public class RuimSmsInterfaceManager extends IccSmsInterfaceManager {
                                 int ai[] = (int[])(int[])ar.result;
                                 index = ai[0];
                                 mLock.notifyAll();
-                                Log.d("CDMA", (new StringBuilder()).append("[handleMessage] write handle message return index=").append(index).toString());
+                                if (DBG) Log.d("CDMA", "[handleMessage] write handle message return index="+index);
                             } catch (Throwable throwable) {
                             index = -1;
                             }

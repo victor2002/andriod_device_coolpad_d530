@@ -727,6 +727,12 @@ public class PhoneProxy extends Handler implements Phone {
         return mActivePhone.getIccPhoneBookInterfaceManager();
     }
 
+    public boolean getIccState(int i)
+    {
+        //Log.d("PHONE", "getIccState()");
+        return mActivePhone.getIccState(i);
+    }
+
     public void setTTYMode(int ttyMode, Message onComplete) {
         mActivePhone.setTTYMode(ttyMode, onComplete);
     }

@@ -218,7 +218,7 @@ class RILRequest {
  */
 public class RIL extends BaseCommands implements CommandsInterface {
     //protected static final String LOG_TAG = "RILJ";
-    private static final boolean DBG = true; //false;
+    private static final boolean DBG = false;//true; //false;
     static final boolean RILJ_LOGD = Config.LOGD;
     static final boolean RILJ_LOGV = DBG ? Config.LOGD : Config.LOGV;
     private boolean rilNeedsNullPath = false;
@@ -2346,7 +2346,7 @@ public class RIL extends BaseCommands implements CommandsInterface {
     private void
     acquireWakeLock() {
         synchronized (mWakeLock) {
-            Log.d(LOG_TAG, "acquireWakeLock mWakeLock.acquire");
+            if (DBG) Log.d(LOG_TAG, "acquireWakeLock mWakeLock.acquire");
             mWakeLock.acquire();
             mRequestMessagesPending++;
 
@@ -2395,7 +2395,7 @@ public class RIL extends BaseCommands implements CommandsInterface {
 
   private void setRadioStateFromRILInt(int paramInt)
   {
-    Log.d(this.LOG_TAG, "setRadioStateFromRILInt: " + paramInt);
+    if (DBG) Log.d(this.LOG_TAG, "setRadioStateFromRILInt: " + paramInt);
     CommandsInterface.RadioState localRadioState;
     switch (paramInt)
     {
@@ -4511,27 +4511,27 @@ public class RIL extends BaseCommands implements CommandsInterface {
 
     protected void riljLog(String msg)
     {
-        Log.d(LOG_TAG, SOCKET_NAME_RIL + " " + msg);
+        /*if (DBG)*/ Log.d(LOG_TAG, SOCKET_NAME_RIL + " " + msg);
     }
 
     protected void riljLogv(String msg) {
-        Log.v(LOG_TAG, SOCKET_NAME_RIL + msg);
+        /*if (DBG)*/ Log.v(LOG_TAG, SOCKET_NAME_RIL + msg);
     }
 
     protected void unsljLog(int response) {
-        riljLog("[UNSL]< " + responseToString(response));
+        /*if (DBG)*/ riljLog("[UNSL]< " + responseToString(response));
     }
 
     protected void unsljLogMore(int response, String more) {
-        riljLog("[UNSL]< " + responseToString(response) + " " + more);
+        /*if (DBG)*/ riljLog("[UNSL]< " + responseToString(response) + " " + more);
     }
 
     protected void unsljLogRet(int response, Object ret) {
-        riljLog("[UNSL]< " + responseToString(response) + " " + retToString(response, ret));
+        /*if (DBG)*/ riljLog("[UNSL]< " + responseToString(response) + " " + retToString(response, ret));
     }
 
     protected void unsljLogvRet(int response, Object ret) {
-        riljLogv("[UNSL]< " + responseToString(response) + " " + retToString(response, ret));
+        /*if (DBG)*/ riljLogv("[UNSL]< " + responseToString(response) + " " + retToString(response, ret));
     }
 
 

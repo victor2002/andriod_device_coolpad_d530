@@ -25,8 +25,15 @@
 #joyfish add vendor/coolpad/D530/proprietary/alsa.omap3.so:/system/lib/hw/alsa.omap3.so 
 #joyfish if out/xxx/system/lib/hw/alsa.default.so exist, need to be removed manually
 
+#for camera work
+PRODUCT_COPY_FILES += vendor/coolpad/D530/proprietary/libcamera.so:obj/lib/libcamera.so 
+PRODUCT_COPY_FILES +=     vendor/coolpad/D530/proprietary/libcamera.so:/system/lib/libcamera.so  
+
+#for MP3 work
+PRODUCT_COPY_FILES += vendor/coolpad/D530/proprietary/libbridge.so:/system/lib/libbridge.so
+PRODUCT_COPY_FILES += vendor/coolpad/D530/proprietary/libLCML.so:/system/lib/libLCML.so
+
 PRODUCT_COPY_FILES += \
-    vendor/coolpad/D530/proprietary/libcamera.so:obj/lib/libcamera.so \
     vendor/coolpad/D530/proprietary/libaudio.so:/system/lib/libaudio.so \
     vendor/coolpad/D530/proprietary/alsa.omap3.so:/system/lib/hw/alsa.omap3.so \
     vendor/coolpad/D530/proprietary/librpcril.so:obj/lib/librpcril.so \
@@ -41,57 +48,55 @@ PRODUCT_COPY_FILES += \
     vendor/coolpad/D530/proprietary/PhoneConfig.apk:/system/app/PhoneConfig.apk
 
 # All the blobs necessary for sholes
-PRODUCT_COPY_FILES += \
-    vendor/coolpad/D530/proprietary/gps.via.so:/system/lib/hw/gps.via.so \
-    vendor/coolpad/D530/proprietary/libcamera.so:/system/lib/libcamera.so \
-    vendor/coolpad/D530/proprietary/librpcril.so:/system/lib/librpcril.so \
-    vendor/coolpad/D530/proprietary/libril.so:/system/lib/libril.so \
-    vendor/coolpad/D530/proprietary/libEGL_POWERVR_SGX530_125.so:/system/lib/egl/libEGL_POWERVR_SGX530_125.so \
-    vendor/coolpad/D530/proprietary/libGLESv1_CM_POWERVR_SGX530_125.so:/system/lib/egl/libGLESv1_CM_POWERVR_SGX530_125.so \
-    vendor/coolpad/D530/proprietary/libGLESv2_POWERVR_SGX530_125.so:/system/lib/egl/libGLESv2_POWERVR_SGX530_125.so \
-    vendor/coolpad/D530/proprietary/gralloc.omap3.so:/system/lib/hw/gralloc.omap3.so \
-    vendor/coolpad/D530/proprietary/lights.default.so:/system/lib/hw/lights.default.so \
-    vendor/coolpad/D530/proprietary/sensors.default.so:/system/lib/hw/sensors.default.so \
-    vendor/coolpad/D530/proprietary/libIMGegl.so:/system/lib/libIMGegl.so \
-    vendor/coolpad/D530/proprietary/libusc.so:/system/lib/libusc.so \
-    vendor/coolpad/D530/proprietary/libcdma_via_ril.so:/system/lib/libcdma_via_ril.so \
-    vendor/coolpad/D530/proprietary/libicamera.so:/system/lib/libicamera.so \
-    vendor/coolpad/D530/proprietary/libOMX.TI.AAC.decode.so:/system/lib/libOMX.TI.AAC.decode.so \
-    vendor/coolpad/D530/proprietary/libOMX.TI.AMR.encode.so:/system/lib/libOMX.TI.AMR.encode.so \
-    vendor/coolpad/D530/proprietary/libOMX.TI.MP3.decode.so:/system/lib/libOMX.TI.MP3.decode.so \
-    vendor/coolpad/D530/proprietary/libOMX.TI.WBAMR.decode.so:/system/lib/libOMX.TI.WBAMR.decode.so \
-    vendor/coolpad/D530/proprietary/libOMX.TI.WMA.decode.so:/system/lib/libOMX.TI.WMA.decode.so \
-    vendor/coolpad/D530/proprietary/libopencore_asflocal.so:/system/lib/libopencore_asflocal.so \
-    vendor/coolpad/D530/proprietary/libopencore_asflocalreg.so:/system/lib/libopencore_asflocalreg.so \
-    vendor/coolpad/D530/proprietary/libpvr2d.so:/system/lib/libpvr2d.so \
-    vendor/coolpad/D530/proprietary/libpvrANDROID_WSEGL.so:/system/lib/libpvrANDROID_WSEGL.so \
-    vendor/coolpad/D530/proprietary/libsrv_um.so:/system/lib/libsrv_um.so \
-    vendor/coolpad/D530/proprietary/libsrv_init.so:/system/lib/libsrv_init.so \
-    vendor/coolpad/D530/proprietary/libVendor_ti_omx.so:/system/lib/libVendor_ti_omx.so \
-    vendor/coolpad/D530/proprietary/libVendor_ti_omx_config_parser.so:/system/lib/libVendor_ti_omx_config_parser.so \
-    vendor/coolpad/D530/proprietary/bin/alsa_phone:/system/bin/alsa_phone \
-    vendor/coolpad/D530/proprietary/bin/PhoneSlotService:/system/bin/PhoneSlotService \
-    vendor/coolpad/D530/proprietary/bin/pppd-ril:/system/bin/pppd-ril \
-    vendor/coolpad/D530/proprietary/bin/pvrsrvinit:/system/bin/pvrsrvinit \
-    device/coolpad/D530/prebuilt/etc/asound.conf:/system/etc/asound.conf \
-    vendor/coolpad/D530/proprietary/01_Vendor_ti_omx.cfg:/system/etc/01_Vendor_ti_omx.cfg \
-    vendor/coolpad/D530/proprietary/firmware.bin:/system/etc/wifi/firmware.bin \
-    vendor/coolpad/D530/proprietary/baseimage.dof:/system/lib/dsp/baseimage.dof \
-    vendor/coolpad/D530/proprietary/conversions.dll64P:/system/lib/dsp/conversions.dll64P \
-    vendor/coolpad/D530/proprietary/h264vdec_sn.dll64P:/system/lib/dsp/h264vdec_sn.dll64P \
-    vendor/coolpad/D530/proprietary/h264venc_sn.dll64P:/system/lib/dsp/h264venc_sn.dll64P \
-    vendor/coolpad/D530/proprietary/jpegenc_sn.dll64P:/system/lib/dsp/jpegenc_sn.dll64P \
-    vendor/coolpad/D530/proprietary/m4venc_sn.dll64P:/system/lib/dsp/m4venc_sn.dll64P \
-    vendor/coolpad/D530/proprietary/mp3dec_sn.dll64P:/system/lib/dsp/mp3dec_sn.dll64P \
-    vendor/coolpad/D530/proprietary/mp4vdec_sn.dll64P:/system/lib/dsp/mp4vdec_sn.dll64P \
-    vendor/coolpad/D530/proprietary/mpeg4aacdec_sn.dll64P:/system/lib/dsp/mpeg4aacdec_sn.dll64P \
-    vendor/coolpad/D530/proprietary/mpeg4aacenc_sn.dll64P:/system/lib/dsp/mpeg4aacenc_sn.dll64P \
-    vendor/coolpad/D530/proprietary/nbamrdec_sn.dll64P:/system/lib/dsp/nbamrdec_sn.dll64P \
-    vendor/coolpad/D530/proprietary/nbamrenc_sn.dll64P:/system/lib/dsp/nbamrenc_sn.dll64P \
-    vendor/coolpad/D530/proprietary/postprocessor_dualout.dll64P:/system/lib/dsp/postprocessor_dualout.dll64P \
-    vendor/coolpad/D530/proprietary/ringio.dll64P:/system/lib/dsp/ringio.dll64P \
-    vendor/coolpad/D530/proprietary/usn.dll64P:/system/lib/dsp/usn.dll64P \
-    vendor/coolpad/D530/proprietary/wbamrdec_sn.dll64P:/system/lib/dsp/wbamrdec_sn.dll64P \
-    vendor/coolpad/D530/proprietary/wbamrenc_sn.dll64P:/system/lib/dsp/wbamrenc_sn.dll64P \
-    vendor/coolpad/D530/proprietary/wmadec_sn.dll64P:/system/lib/dsp/wmadec_sn.dll64P \
-    vendor/coolpad/D530/proprietary/wmv9dec_sn.dll64P:/system/lib/dsp/wmv9dec_sn.dll64P 
+PRODUCT_COPY_FILES +=     vendor/coolpad/D530/proprietary/gps.via.so:/system/lib/hw/gps.via.so  
+PRODUCT_COPY_FILES +=     vendor/coolpad/D530/proprietary/librpcril.so:/system/lib/librpcril.so  
+PRODUCT_COPY_FILES +=     vendor/coolpad/D530/proprietary/libril.so:/system/lib/libril.so  
+PRODUCT_COPY_FILES +=     vendor/coolpad/D530/proprietary/libEGL_POWERVR_SGX530_125.so:/system/lib/egl/libEGL_POWERVR_SGX530_125.so  
+PRODUCT_COPY_FILES +=     vendor/coolpad/D530/proprietary/libGLESv1_CM_POWERVR_SGX530_125.so:/system/lib/egl/libGLESv1_CM_POWERVR_SGX530_125.so  
+PRODUCT_COPY_FILES +=     vendor/coolpad/D530/proprietary/libGLESv2_POWERVR_SGX530_125.so:/system/lib/egl/libGLESv2_POWERVR_SGX530_125.so  
+PRODUCT_COPY_FILES +=     vendor/coolpad/D530/proprietary/gralloc.omap3.so:/system/lib/hw/gralloc.omap3.so  
+PRODUCT_COPY_FILES +=     vendor/coolpad/D530/proprietary/lights.default.so:/system/lib/hw/lights.default.so  
+PRODUCT_COPY_FILES +=     vendor/coolpad/D530/proprietary/sensors.default.so:/system/lib/hw/sensors.default.so  
+PRODUCT_COPY_FILES +=     vendor/coolpad/D530/proprietary/libIMGegl.so:/system/lib/libIMGegl.so  
+PRODUCT_COPY_FILES +=     vendor/coolpad/D530/proprietary/libusc.so:/system/lib/libusc.so  
+PRODUCT_COPY_FILES +=     vendor/coolpad/D530/proprietary/libcdma_via_ril.so:/system/lib/libcdma_via_ril.so  
+PRODUCT_COPY_FILES +=     vendor/coolpad/D530/proprietary/libicamera.so:/system/lib/libicamera.so  
+#PRODUCT_COPY_FILES +=     vendor/coolpad/D530/proprietary/libOMX.TI.AAC.decode.so:/system/lib/libOMX.TI.AAC.decode.so  
+#PRODUCT_COPY_FILES +=     vendor/coolpad/D530/proprietary/libOMX.TI.AMR.encode.so:/system/lib/libOMX.TI.AMR.encode.so  
+#PRODUCT_COPY_FILES +=     vendor/coolpad/D530/proprietary/libOMX.TI.MP3.decode.so:/system/lib/libOMX.TI.MP3.decode.so  
+#PRODUCT_COPY_FILES +=     vendor/coolpad/D530/proprietary/libOMX.TI.WBAMR.decode.so:/system/lib/libOMX.TI.WBAMR.decode.so  
+#PRODUCT_COPY_FILES +=     vendor/coolpad/D530/proprietary/libOMX.TI.WMA.decode.so:/system/lib/libOMX.TI.WMA.decode.so  
+#PRODUCT_COPY_FILES +=     vendor/coolpad/D530/proprietary/libopencore_asflocal.so:/system/lib/libopencore_asflocal.so  
+#PRODUCT_COPY_FILES +=     vendor/coolpad/D530/proprietary/libopencore_asflocalreg.so:/system/lib/libopencore_asflocalreg.so  
+PRODUCT_COPY_FILES +=     vendor/coolpad/D530/proprietary/libpvr2d.so:/system/lib/libpvr2d.so  
+PRODUCT_COPY_FILES +=     vendor/coolpad/D530/proprietary/libpvrANDROID_WSEGL.so:/system/lib/libpvrANDROID_WSEGL.so  
+PRODUCT_COPY_FILES +=     vendor/coolpad/D530/proprietary/libsrv_um.so:/system/lib/libsrv_um.so  
+PRODUCT_COPY_FILES +=     vendor/coolpad/D530/proprietary/libsrv_init.so:/system/lib/libsrv_init.so  
+#PRODUCT_COPY_FILES +=     vendor/coolpad/D530/proprietary/libVendor_ti_omx.so:/system/lib/libVendor_ti_omx.so  
+#PRODUCT_COPY_FILES +=     vendor/coolpad/D530/proprietary/libVendor_ti_omx_config_parser.so:/system/lib/libVendor_ti_omx_config_parser.so  
+PRODUCT_COPY_FILES +=     vendor/coolpad/D530/proprietary/bin/alsa_phone:/system/bin/alsa_phone  
+PRODUCT_COPY_FILES +=     vendor/coolpad/D530/proprietary/bin/PhoneSlotService:/system/bin/PhoneSlotService  
+PRODUCT_COPY_FILES +=     vendor/coolpad/D530/proprietary/bin/pppd-ril:/system/bin/pppd-ril  
+PRODUCT_COPY_FILES +=     vendor/coolpad/D530/proprietary/bin/pvrsrvinit:/system/bin/pvrsrvinit  
+PRODUCT_COPY_FILES +=     device/coolpad/D530/prebuilt/etc/asound.conf:/system/etc/asound.conf  
+#PRODUCT_COPY_FILES +=     vendor/coolpad/D530/proprietary/01_Vendor_ti_omx.cfg:/system/etc/01_Vendor_ti_omx.cfg  
+PRODUCT_COPY_FILES +=     vendor/coolpad/D530/proprietary/firmware.bin:/system/etc/wifi/firmware.bin  
+PRODUCT_COPY_FILES +=     vendor/coolpad/D530/proprietary/baseimage.dof:/system/lib/dsp/baseimage.dof  
+PRODUCT_COPY_FILES +=     vendor/coolpad/D530/proprietary/conversions.dll64P:/system/lib/dsp/conversions.dll64P  
+PRODUCT_COPY_FILES +=     vendor/coolpad/D530/proprietary/h264vdec_sn.dll64P:/system/lib/dsp/h264vdec_sn.dll64P  
+PRODUCT_COPY_FILES +=     vendor/coolpad/D530/proprietary/h264venc_sn.dll64P:/system/lib/dsp/h264venc_sn.dll64P  
+PRODUCT_COPY_FILES +=     vendor/coolpad/D530/proprietary/jpegenc_sn.dll64P:/system/lib/dsp/jpegenc_sn.dll64P  
+PRODUCT_COPY_FILES +=     vendor/coolpad/D530/proprietary/m4venc_sn.dll64P:/system/lib/dsp/m4venc_sn.dll64P  
+PRODUCT_COPY_FILES +=     vendor/coolpad/D530/proprietary/mp3dec_sn.dll64P:/system/lib/dsp/mp3dec_sn.dll64P  
+PRODUCT_COPY_FILES +=     vendor/coolpad/D530/proprietary/mp4vdec_sn.dll64P:/system/lib/dsp/mp4vdec_sn.dll64P  
+PRODUCT_COPY_FILES +=     vendor/coolpad/D530/proprietary/mpeg4aacdec_sn.dll64P:/system/lib/dsp/mpeg4aacdec_sn.dll64P  
+PRODUCT_COPY_FILES +=     vendor/coolpad/D530/proprietary/mpeg4aacenc_sn.dll64P:/system/lib/dsp/mpeg4aacenc_sn.dll64P  
+PRODUCT_COPY_FILES +=     vendor/coolpad/D530/proprietary/nbamrdec_sn.dll64P:/system/lib/dsp/nbamrdec_sn.dll64P  
+PRODUCT_COPY_FILES +=     vendor/coolpad/D530/proprietary/nbamrenc_sn.dll64P:/system/lib/dsp/nbamrenc_sn.dll64P  
+PRODUCT_COPY_FILES +=     vendor/coolpad/D530/proprietary/postprocessor_dualout.dll64P:/system/lib/dsp/postprocessor_dualout.dll64P  
+PRODUCT_COPY_FILES +=     vendor/coolpad/D530/proprietary/ringio.dll64P:/system/lib/dsp/ringio.dll64P  
+PRODUCT_COPY_FILES +=     vendor/coolpad/D530/proprietary/usn.dll64P:/system/lib/dsp/usn.dll64P  
+PRODUCT_COPY_FILES +=     vendor/coolpad/D530/proprietary/wbamrdec_sn.dll64P:/system/lib/dsp/wbamrdec_sn.dll64P  
+PRODUCT_COPY_FILES +=     vendor/coolpad/D530/proprietary/wbamrenc_sn.dll64P:/system/lib/dsp/wbamrenc_sn.dll64P  
+PRODUCT_COPY_FILES +=     vendor/coolpad/D530/proprietary/wmadec_sn.dll64P:/system/lib/dsp/wmadec_sn.dll64P  
+PRODUCT_COPY_FILES +=     vendor/coolpad/D530/proprietary/wmv9dec_sn.dll64P:/system/lib/dsp/wmv9dec_sn.dll64P 

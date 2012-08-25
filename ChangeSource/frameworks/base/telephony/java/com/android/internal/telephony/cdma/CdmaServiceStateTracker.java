@@ -685,7 +685,7 @@ final class CdmaServiceStateTracker extends ServiceStateTracker {
         int ints[];
         String states[];
 
-        log((new StringBuilder()).append("enter handlePollStateResult .").append(what).toString());
+        if (DBG) log("enter handlePollStateResult ."+what);
         // Ignore stale requests from last poll.
         if (ar.userObj != pollingContext) return;
 

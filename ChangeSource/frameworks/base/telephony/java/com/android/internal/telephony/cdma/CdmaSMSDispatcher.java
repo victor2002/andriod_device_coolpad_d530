@@ -66,6 +66,7 @@ import android.content.res.Resources;
 
 final class CdmaSMSDispatcher extends SMSDispatcher {
     private static final String TAG = "CDMA";
+    protected static final boolean DBG = false;
 
     private byte[] mLastDispatchedSmsFingerprint;
     private byte[] mLastAcknowledgedSmsFingerprint;
@@ -129,7 +130,7 @@ final class CdmaSMSDispatcher extends SMSDispatcher {
             mLastDispatchedSmsFingerprint = sms.getIncomingSmsFingerprint();
             if (mLastAcknowledgedSmsFingerprint != null &&
                     Arrays.equals(mLastDispatchedSmsFingerprint, mLastAcknowledgedSmsFingerprint)) {
-                //if (DBG) Log.d("CDMA", "dispatchMessage duplicate message return.");//+
+                if (DBG) Log.d("CDMA", "dispatchMessage duplicate message return.");//+
                 return Intents.RESULT_SMS_HANDLED;
             }
         }
@@ -254,26 +255,24 @@ final class CdmaSMSDispatcher extends SMSDispatcher {
                 }
             } else {
                 // Normal short and non-port-addressed message, dispatch it.
-                if(sms.getIndexOnIcc() == -1)//+
+		        if(sms.getIndexOnIcc() == -1)  //+
                 {
-                    Log.i("CDMA", "MessageBody:"+sms.getMessageBody());
-                    Log.i("CDMA", "Sender:"+sms.getOriginatingAddress()+",teleService:"+teleService+",UserData:"+sms.getUserData());
-                    //getExternInterfaceParseResult is for filter use, nor force dont filter it
+                    if (DBG) Log.i("CDMA", "MessageBody:"+sms.getMessageBody());
+                    if (DBG) Log.i("CDMA", "Sender:"+sms.getOriginatingAddress()+",teleService:"+teleService+",UserData:"+sms.getUserData());
                     int l = 2;//ExtInterfaceParse.getExternInterfaceParseResult(mContext, sms.getOriginatingAddress(), teleService,
-                            //  sms.getMessageBody(), sms.getUserData(), sms.getPdu());
                     if(l == 1)
                         return -1;//Intents.STATUS_NONE; //k = -1;
                     else if(l == 2)
                     {
                         dispatchPdus(pdus, 1);
-                        return -1;//Intents.STATUS_NONE; //k = -1;
+                        //return -1;//Intents.STATUS_NONE; //k = -1;
                     }
                     else
                     {
                         dispatchPdus(pdus, 0);
                         return Intents.RESULT_SMS_HANDLED;
                     }
-                }
+				}
                 dispatchPdusOnIcc(pdus, sms.getIndexOnIcc(), sms.getStatusOnIcc());
                 if(sms.getMessageClass() == android.telephony.SmsMessage.MessageClass.CLASS_0)
                     mCm.deleteSmsOnSim(sms.getIndexOnIcc(), null);
@@ -291,15 +290,15 @@ final class CdmaSMSDispatcher extends SMSDispatcher {
     }
 
      /////////////+
-    public int dispatchPbParam(int i, int j, int k)
+    public int dispatchPbParam(int nTotal, int nUsed, int nState)
     {
-        dispatchParamPb(i, j, k);
+        dispatchParamPb(nTotal, nUsed, nState);
         return -1;
     }
 
-    public int dispatchSmsParam(int i, int j, int k)
+    public int dispatchSmsParam(int nTotal, int nUsed, int nState)
     {
-        dispatchParam(i, j, k);
+        dispatchParam(nTotal, nUsed, nState);;
         return -1;
     }
      //////////////
@@ -551,7 +550,7 @@ final class CdmaSMSDispatcher extends SMSDispatcher {
     protected void acknowledgeLastIncomingSms(boolean success, int result, Message response){
         // FIXME unit test leaves cm == null. this should change
 
-        Log.d("CDMA", "acknowledgeLastIncomingSms enter.");
+        if (DBG) Log.d("CDMA", "acknowledgeLastIncomingSms enter.");
         String inEcm=SystemProperties.get(TelephonyProperties.PROPERTY_INECM_MODE, "false");
         if (inEcm.equals("true")) {
             return;

@@ -55,7 +55,8 @@ IccIoResult {
      * Returns exception on error or null if success
      */
     public IccException getException() {
-        if (success()) return null;
+        return null;
+        /*if (success()) return null;
 
         switch (sw1) {
             case 0x94:
@@ -66,6 +67,6 @@ IccIoResult {
                 }
             default:
                 return new IccException("sw1:" + sw1 + " sw2:" + sw2);
-        }
+        }*/
     }
 }

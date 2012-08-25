@@ -1729,4 +1729,6 @@ public interface Phone {
      * false otherwise
      */
     boolean isCspPlmnEnabled();
+
+		public abstract boolean getIccState(int i);
 }

@@ -48,7 +48,7 @@ public final class SIMRecords extends IccRecords {
 
     private static final boolean CRASH_RIL = false;
 
-    private static final boolean DBG = true;
+    private static final boolean DBG = false;
 
     // ***** Instance Variables
 
@@ -193,6 +193,18 @@ public final class SIMRecords extends IccRecords {
 
     }
 
+    public void deleteCardSmsbyIndex(int i)
+    {
+        if(i < 1 || i > mCardSmsMax)
+        {
+            if (DBG) Log.e("GSM", "index error deleteCardSmsbyIndex: "+i);
+        } else
+        {
+            //Log.d("GSM", "deleteCardSmsbyIndex index: "+currentIndex);
+            phone.mCM.deleteSmsOnSim(i, null);
+        }
+    }
+
     public void dispose() {
         //Unregister for all events
         phone.mCM.unregisterForSIMReady(this);
@@ -206,7 +218,7 @@ public final class SIMRecords extends IccRecords {
     /////+
     public void getCardSmsbyIndex(int i)
     {
-        phone.getIccFileHandler().loadEFLinearFixedAll(28476, obtainMessage(18));
+        phone.getIccFileHandler().loadEFLinearFixedAll(EF_SMS, obtainMessage(EVENT_GET_ALL_SMS_DONE));//28476=0x6f3c  EVENT_GET_ALL_SMS_DONE=18
     }
     /////////
 
@@ -1084,13 +1096,13 @@ public final class SIMRecords extends IccRecords {
         }
     }
     ///////////+
-    protected void handlePbParam(int i, int j, int k)
+    protected void handlePbParam(int nTotal, int nUsed, int nState)
     {
     }
 
-    protected void handleSmsParam(int i, int j, int k)
+    protected void handleSmsParam(int nTotal, int nUsed, int nState)
     {
-        ((GSMPhone)phone).mSMS.dispatchSmsParam(i, j, k);
+        ((GSMPhone)phone).mSMS.dispatchSmsParam(nTotal, nUsed, nState);;
     }
     //////////////
 
@@ -1160,12 +1172,17 @@ public final class SIMRecords extends IccRecords {
     }
 
     private void handleSms(byte[] ba) {
-        if (ba[0] != 0)
+        if (ba[0] == 0)
+        {
+            if (DBG) Log.d("GSM", "handleSms: receive new message on card ,delete ");
+            deleteCardSmsbyIndex(currentIndex);
+        }
+        else
             Log.d("ENF", "status : " + ba[0]);
 
         // 3GPP TS 51.011 v5.0.0 (20011-12)  10.5.3
         // 3 == "received by MS from network; message to be read"
-        if (ba[0] == 3) {
+        if (ba[0] == 3 || ba[0] == 0) {
             int n = ba.length;
 
             // Note: Data may include trailing FF's.  That's OK; message
@@ -1174,7 +1191,12 @@ public final class SIMRecords extends IccRecords {
             System.arraycopy(ba, 1, pdu, 0, n - 1);
             SmsMessage message = SmsMessage.createFromPdu(pdu);
 
-            ((GSMPhone) phone).mSMS.dispatchMessage(message);
+            if(message != null)
+            {
+                if(ba[0] == 0)
+                    message.setIndexOnIcc(-1);
+                ((GSMPhone) phone).mSMS.dispatchMessage(message);
+            }
         }
     }
 
@@ -1191,7 +1213,7 @@ public final class SIMRecords extends IccRecords {
             // 3GPP TS 51.011 v5.0.0 (20011-12)  10.5.3
             // 3 == "received by MS from network; message to be read"
 
-            if (ba[0] == 3) {
+            if (ba[0] == 0 || ba[0] == 1 || ba[0] == 2 || ba[0] == 3 || ba[0] == 4) {
                 int n = ba.length;
 
                 // Note: Data may include trailing FF's.  That's OK; message
@@ -1199,13 +1221,28 @@ public final class SIMRecords extends IccRecords {
                 byte[] pdu = new byte[n - 1];
                 System.arraycopy(ba, 1, pdu, 0, n - 1);
                 SmsMessage message = SmsMessage.createFromPdu(pdu);
+                
+                if (message != null)
+                {
+                    currentIndex = i + 1;
+                    if(ba[0] == 0)
+                    {
+                        if (DBG) Log.d("GSM", "handleSmses: receive new message on card ,delete.");
+                        deleteCardSmsbyIndex(currentIndex);
+                        message.setIndexOnIcc(-1);
+                    } else
+                    {
+                        message.setIndexOnIcc(currentIndex);
+                    }
+                    message.setStatusOnIcc(ba[0]);
+                    //((GSMPhone)phone).mSMS.dispatchMessage(smsmessage);
+                    ((GSMPhone) phone).mSMS.dispatchMessage(message);
+                    isNewSms = false;
+                    // 3GPP TS 51.011 v5.0.0 (20011-12)  10.5.3
+                    // 1 == "received by MS from network; message read"
+                        ba[0] = 1;
+                }
 
-                ((GSMPhone) phone).mSMS.dispatchMessage(message);
-
-                // 3GPP TS 51.011 v5.0.0 (20011-12)  10.5.3
-                // 1 == "received by MS from network; message read"
-
-                ba[0] = 1;
 
                 if (false) { // XXX writing seems to crash RdoServD
                     phone.getIccFileHandler().updateEFLinearFixed(EF_SMS,

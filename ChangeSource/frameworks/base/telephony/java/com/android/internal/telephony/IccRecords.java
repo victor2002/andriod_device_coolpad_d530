@@ -46,7 +46,7 @@ public abstract class IccRecords extends Handler implements IccConstants {
     public static final int CARD_RECORDS_UNACTIVE = 2;
     public static final int CARD_RECORDS_CLEAR = 3;
 
-    protected static final boolean DBG = true;
+    protected static final boolean DBG = false;
     // ***** Instance Variables
 
     protected PhoneBase phone;
@@ -72,17 +72,17 @@ public abstract class IccRecords extends Handler implements IccConstants {
     protected String newVoiceMailTag = null;
     protected boolean isVoiceMailFixed = false;
     //////////////////////////
-    public int mCardAdnMax = 0; //+
-    public int mCardAdnNameMax = 0; //+
-    public int mCardAdnNumberMax = 0;
-    public int mCardAdnUsed = 0;
+    public int mCardAdnMax;// = 0; //+
+    public int mCardAdnNameMax;// = 0; //+
+    public int mCardAdnNumberMax;// = 0;
+    public int mCardAdnUsed;// = 0;
     public int mCardInitState = CARD_INIT_STATE_UNINIT;//0;
-    public int mCardSmsMax = 50;
-    public int mCardSmsUsed = 0;
-    public int mCurReadIndex = 1;
-    public int mMaxReadCount = 0;
-    public int mReadAdnTotal = 0;
-    public int mReadSmsTotal = 0; //+
+    public int mCardSmsMax;// = 50;
+    public int mCardSmsUsed;// = 0;
+    public int mCurReadIndex;// = 1;
+    public int mMaxReadCount;// = 0;
+    public int mReadAdnTotal;// = 0;
+    public int mReadSmsTotal;// = 0; //+
     public boolean bCardSmsInited; //+
     public boolean bCardAdnInited;//+
     /////////////////////////////////////
@@ -159,8 +159,8 @@ public abstract class IccRecords extends Handler implements IccConstants {
         this.mCardAdnNumberMax = 0;
         this.mCardAdnNameMax = 0;
         this.mMaxReadCount = 10;
-        handleSmsParam(0, 0, 3);
-        handlePbParam(0, 0, 3);
+        handleSmsParam(0, 0, CARD_INIT_STATE_GET_ADN_PARAM);
+        handlePbParam(0, 0, CARD_INIT_STATE_GET_ADN_PARAM);
         break;
     case CARD_INIT_STATE_GET_SMS_PARAM: //1:
         getCardSmsParam();
@@ -178,7 +178,7 @@ public abstract class IccRecords extends Handler implements IccConstants {
         this.SMSInitCompleteRegistrants.notifyRegistrants(new AsyncResult(null, null, null));
         //no break here!
     case CARD_INIT_STATE_GET_ADN_PARAM://3:
-        handleSmsParam(this.mCardSmsMax, this.mCardSmsUsed, 1);
+        handleSmsParam(this.mCardSmsMax, this.mCardSmsUsed, CARD_RECORDS_LOADED); //1
         getCardPBMParam();
         break;
     case CARD_INIT_STATE_GET_ADN_INFO://4:
@@ -186,7 +186,7 @@ public abstract class IccRecords extends Handler implements IccConstants {
         break;
     case CARD_INIT_STATE_COMPLETE: //5:
         this.bCardAdnInited = true;
-        handlePbParam(this.mCardAdnMax, this.mCardAdnUsed, 1);
+        handlePbParam(this.mCardAdnMax, this.mCardAdnUsed, CARD_RECORDS_LOADED);//1
         break;
     }
   }
@@ -371,8 +371,8 @@ public abstract class IccRecords extends Handler implements IccConstants {
 
     protected abstract void onAllRecordsLoaded();
 
-    protected abstract void handleSmsParam(int i, int j, int k);//+
-    protected abstract void handlePbParam(int i, int j, int k);//+
+    protected abstract void handleSmsParam(int nTotal, int nUsed, int nState);//+
+    protected abstract void handlePbParam(int nTotal, int nUsed, int nState);
     /**
      * Returns the SpnDisplayRule based on settings on the SIM and the
      * specified plmn (currently-registered PLMN).  See TS 22.101 Annex A

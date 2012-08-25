@@ -2399,8 +2399,8 @@ void TouchInputMapper::dispatchTouch(nsecs_t when, uint32_t policyFlags,
 
             // X and Y
 #ifdef HAS_POINTERCAL
-            float x = float(in.x) ;
-            float y = float(in.y) ;
+            float x = float(in.x - mLocked.xOrigin) * mLocked.xScale;
+            float y = float(in.y - mLocked.yOrigin) * mLocked.yScale;
 #else
             float x = float(in.x - mLocked.xOrigin) * mLocked.xScale;
             float y = float(in.y - mLocked.yOrigin) * mLocked.yScale;
@@ -3828,7 +3828,7 @@ extern "C" void loadPointercalData(const char* filename)
     a05 = temp_a05;
     a06 = temp_a06;
     a07 = atoi(result);
-    LOGD("a01~a07 %d %d %d %d %d %d %d\n", a01, a02, a03, a04, a05, a06, a07);
+    //LOGD("a01~a07 %d %d %d %d %d %d %d\n", a01, a02, a03, a04, a05, a06, a07);
 }
 #endif
 

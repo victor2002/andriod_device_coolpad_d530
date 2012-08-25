@@ -55,7 +55,7 @@ import java.util.ArrayList;//+
 public final class RuimRecords extends IccRecords {
     static final String LOG_TAG = "CDMA";
 
-    private static final boolean DBG = true;
+    private static final boolean DBG = false;
     private boolean  m_ota_commited=false;
 
     // ***** Instance Variables
@@ -153,11 +153,11 @@ public final class RuimRecords extends IccRecords {
   {
     if ((paramInt < 1) || (paramInt > this.mCardSmsMax))
     {
-      Log.e("CDMA", "index error getRuimSmsbyIndex: " + paramInt);
+      if (DBG) Log.e("CDMA", "index error getRuimSmsbyIndex: " + paramInt);
       return;
     }
       currentIndex = paramInt;
-      Log.d("CDMA", "index getRuimSmsbyIndex: " + currentIndex);
+      if (DBG) Log.d("CDMA", "index getRuimSmsbyIndex: " + currentIndex);
       //this.phone.mCM.getCardSmsInfo(paramInt, obtainMessage(EVENT_GET_SMS_DONE, new IccRecords.newMessageContext(this, isNewSms, paramInt)));//22
       this.phone.mCM.getCardSmsInfo(paramInt, obtainMessage(EVENT_GET_SMS_DONE, new IccRecords.newMessageContext(isNewSms, paramInt)));//22
   }
@@ -279,7 +279,7 @@ public final class RuimRecords extends IccRecords {
                     this.mCardSmsUsed = arrayOfInt4[0];
                     this.mCardSmsMax = arrayOfInt4[1];
                     Log.d("CDMA", "mCardSmsUsed:" + this.mCardSmsUsed + ";mCardSmsMax:" + this.mCardSmsMax);
-                          fetchCardSmsAndPBM(CARD_INIT_STATE_GET_SMS_INFO);//2
+                    fetchCardSmsAndPBM(CARD_INIT_STATE_GET_SMS_INFO);//2
                 }
                 break;
             case EVENT_CARD_PBMPARAM1_DONE://43
@@ -378,7 +378,7 @@ public final class RuimRecords extends IccRecords {
                 }
                 else
                 {
-                    Log.d(LOG_TAG, "IMSI: " + mImsi.substring(0, 6) + "xxxxxxxxx");
+                    if (DBG) Log.d(LOG_TAG, "IMSI: " + mImsi.substring(0, 6) + "xxxxxxxxx");
                     if ((this.mncLength != 0) && (this.mncLength != -1))
                     {
                         MccTable.updateMccMncConfiguration(phone, mImsi.substring(0, 3 + mncLength));
@@ -401,34 +401,34 @@ public final class RuimRecords extends IccRecords {
             break;
 
             case EVENT_GET_ALL_SMS_DONE:
-                Log.d(LOG_TAG, "EVENT_GET_ALL_SMS_DONE");
+                if (DBG) Log.d(LOG_TAG, "EVENT_GET_ALL_SMS_DONE");
                 ar = (AsyncResult)msg.obj;
                 if (ar.exception == null) {
                     handleSmses((ArrayList)ar.result);
                 }
               break;
             case EVENT_MARK_SMS_READ_DONE:
-                Log.d(LOG_TAG, "EVENT_MARK_SMS_READ_DONE");
-                Log.w(LOG_TAG, "Event not supported: " + msg.what);
+                if (DBG) Log.d(LOG_TAG, "EVENT_MARK_SMS_READ_DONE");
+                if (DBG) Log.w(LOG_TAG, "Event not supported: " + msg.what);
                 break;
             case EVENT_SMS_ON_RUIM:
-                Log.d(LOG_TAG, "EVENT_SMS_ON_RUIM");
+                if (DBG) Log.d(LOG_TAG, "EVENT_SMS_ON_RUIM");
                 //Log.w(LOG_TAG, "Event not supported: " + msg.what);
                 //flag = false;
                 AsyncResult asyncresult2 = (AsyncResult)msg.obj;
                 int ai[] = (int[])(int[])asyncresult2.result;
                 if(asyncresult2.exception != null || ai.length != 1)
                 {
-                    Log.e("CDMA", (new StringBuilder()).append("[SIMRecords] Error on SMS_ON_SIM with exp ").append(asyncresult2.exception).append(" length ").append(ai.length).toString());
+                    if (DBG) Log.e("CDMA", (new StringBuilder()).append("[SIMRecords] Error on SMS_ON_SIM with exp ").append(asyncresult2.exception).append(" length ").append(ai.length).toString());
                 } else
                 {
-                    Log.d("CDMA", (new StringBuilder()).append("READ EF_SMS RECORD index=").append(ai[0]).toString());
+                    if (DBG) Log.d("CDMA", (new StringBuilder()).append("READ EF_SMS RECORD index=").append(ai[0]).toString());
                     isNewSms = true;
                     getCardSmsbyIndex(ai[0]);
                 }
                 break;
             case EVENT_GET_SMS_DONE:
-                Log.d(LOG_TAG, "EVENT_GET_SMS_DONE");
+                if (DBG) Log.d(LOG_TAG, "EVENT_GET_SMS_DONE");
                 AsyncResult asyncresult1 = (AsyncResult)msg.obj;
                 com.android.internal.telephony.IccRecords.newMessageContext newmessagecontext = (com.android.internal.telephony.IccRecords.newMessageContext)asyncresult1.userObj;
                 IccIoResult iccioresult = (IccIoResult)asyncresult1.result;
@@ -443,12 +443,12 @@ public final class RuimRecords extends IccRecords {
                         handleSms(iccioresult.payload);
                 } else
                 {
-                    Log.e("CDMA", (new StringBuilder()).append("[RUIMRecords] Error on GET_SMS with exp ").append(asyncresult1.exception).toString());
+                    if (DBG) Log.e("CDMA", (new StringBuilder()).append("[RUIMRecords] Error on GET_SMS with exp ").append(asyncresult1.exception).toString());
                 }
                 if(!bCardSmsInited && !newmessagecontext.isNewSms)
                 {
                     mCurReadIndex = 1 + mCurReadIndex;
-                    Log.w(LOG_TAG, "mCardInitState: " + mCardInitState);
+                    if (DBG) Log.w(LOG_TAG, "mCardInitState: " + mCardInitState);
                     fetchCardSmsAndPBM(mCardInitState);
                 }
                 //Log.w(LOG_TAG, "Event not supported: " + msg.what);
@@ -547,19 +547,19 @@ public final class RuimRecords extends IccRecords {
                 i += 256;
             byte[] pdu = new byte[i];
             System.arraycopy(ba, 2, pdu, 0, i);
-            if (DBG) Log.d("CDMA", "handleSms ba[1]: "+ ba[1]+" i="+i);
+            if (DBG) Log.d("CDMA", "handleSms ba length: "+ ba.length+" i="+i+" pdu len:"+pdu.length);
             SmsMessage smsmessage = SmsMessage.createFromPdu(pdu);
             if(smsmessage != null)
             {
                 smsmessage.setStatusOnIcc(ba[0]);
                 if(isNewSms)
                 {
-                    Log.d("CDMA", "setIndexOnIcc -1 ");
+                    if (DBG) Log.d("CDMA", "setIndexOnIcc -1 ");
                     smsmessage.setIndexOnIcc(-1);
                 } else
                 {
                     smsmessage.setIndexOnIcc(currentIndex);
-                    Log.d("CDMA", "setIndexOnIcc "+currentIndex);
+                    if (DBG) Log.d("CDMA", "setIndexOnIcc "+currentIndex);
                 }
                 ((CDMAPhone)phone).mSMS.dispatchMessage(smsmessage);
                 isNewSms = false;
@@ -602,10 +602,10 @@ public final class RuimRecords extends IccRecords {
     {
         if(i < 1 || i > mCardSmsMax)
         {
-            Log.e("CDMA", (new StringBuilder()).append("index error deleteCardSmsbyIndex: ").append(i).toString());
+            if (DBG) Log.e("CDMA", (new StringBuilder()).append("index error deleteCardSmsbyIndex: ").append(i).toString());
         } else
         {
-            Log.d("CDMA", (new StringBuilder()).append("deleteCardSmsbyIndex index: ").append(currentIndex).toString());
+            if (DBG) Log.d("CDMA", (new StringBuilder()).append("deleteCardSmsbyIndex index: ").append(currentIndex).toString());
             phone.mCM.deleteSmsOnSim(i, null);
         }
     }
@@ -699,14 +699,14 @@ public final class RuimRecords extends IccRecords {
     }
 
     //////////+
-    protected void handlePbParam(int i, int j, int k)
+    protected void handlePbParam(int nTotal, int nUsed, int nState)
     {
-        ((CDMAPhone)phone).mSMS.dispatchPbParam(i, j, k);
+        ((CDMAPhone)phone).mSMS.dispatchPbParam(nTotal, nUsed, nState);
     }
 
-    protected void handleSmsParam(int i, int j, int k)
+    protected void handleSmsParam(int nTotal, int nUsed, int nState)
     {
-        ((CDMAPhone)phone).mSMS.dispatchSmsParam(i, j, k);
+        ((CDMAPhone)phone).mSMS.dispatchSmsParam(nTotal, nUsed, nState);
     }
     ///////////
 

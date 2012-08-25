@@ -102,11 +102,12 @@ final class GsmSMSDispatcher extends SMSDispatcher {
         message.recycle();
     }
     
-    public int dispatchPbParam(int i, int j, int k)
+    public int dispatchPbParam(int nTotal, int nUsed, int nState)
     {
-        dispatchParamPb(i, j, k);
+        dispatchParamPb(nTotal, nUsed, nState);
         return -1;
     }
+
 
     public int dispatchSmsParam(int i, int j, int k)
     {
