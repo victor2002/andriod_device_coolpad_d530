@@ -97,10 +97,11 @@ BOARD_HAVE_FAKE_GPS := true
 
 # Camera
 #USE_CAMERA_STUB := true
+#BOARD_CAMERA_LIBRARIES := libcamera
+#TARGET_PROVIDES_LIBCAMERA := true
+#BOARD_USE_FROYO_LIBCAMERA := true
 BOARD_CAMERA_LIBRARIES := libcamera
-TARGET_PROVIDES_LIBCAMERA := true
-BOARD_USE_FROYO_LIBCAMERA := true
-
+TARGET_PROVIDES_LIBCAMERA := false
 
 #dsp
 HARDWARE_OMX := true
@@ -115,8 +116,8 @@ ifdef HARDWARE_OMX
 OMX_JPEG := true
 OMX_VENDOR := ti
 OMX_VENDOR_INCLUDES := \
-   hardware/ti/omx/system/src/openmax_il/omx_core/inc \
-   hardware/ti/omx/image/src/openmax_il/jpeg_enc/inc
+   hardware/ti/omap3-compat/omx/system/src/openmax_il/omx_core/inc \
+   hardware/ti/omap3-compat/omx/image/src/openmax_il/jpeg_enc/inc
 OMX_VENDOR_WRAPPER := TI_OMX_Wrapper
 BOARD_OPENCORE_LIBRARIES := libOMX_Core
 BOARD_OPENCORE_FLAGS := -DHARDWARE_OMX=1
