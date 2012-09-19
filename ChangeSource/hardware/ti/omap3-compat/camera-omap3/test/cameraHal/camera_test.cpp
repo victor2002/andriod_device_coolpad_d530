@@ -143,7 +143,7 @@ int saturation = 0;
 int zoomIDX = 0;
 int videoCodecIDX = 0;
 int audioCodecIDX = 0;
-int outputFormatIDX = 0;
+int outputFormatIDX = 1;
 int contrast = 0;
 int brightness = 0;
 unsigned int burst = 0;
@@ -923,13 +923,14 @@ int configureRecorder() {
     if ( recorder->setVideoSource(VIDEO_SOURCE_CAMERA) < 0 ) {
         printf("error while configuring camera video source\n");
 
+        LOGE("[%d] %s ====x===x==test case camera_test== here ==================",__LINE__, __FUNCTION__);
         return -1;
     }
 
 
     if ( recorder->setAudioSource(AUDIO_SOURCE_MIC) < 0 ) {
         printf("error while configuring camera audio source\n");
-
+        LOGE("[%d] %s ====x===x==test case camera_test== here ==================",__LINE__, __FUNCTION__);
         return -1;
     }
 
@@ -959,6 +960,7 @@ int configureRecorder() {
 
     recording_counter++;
 
+    LOGE("[%d] %s ====x===x==test case camera_test== here ==================",__LINE__, __FUNCTION__);
     if ( recorder->setVideoFrameRate(frameRate[frameRateIDX].fps) < 0 ) {
         printf("error while configuring video framerate\n");
 
@@ -989,6 +991,7 @@ int configureRecorder() {
         return -1;
     }
 
+    LOGE("[%d] %s ====x===x==test case camera_test== here ==================",__LINE__, __FUNCTION__);
     return 0;
 }
 
@@ -1094,9 +1097,14 @@ int startPreview() {
 
         }
 
+        LOGE("[%d] %s here preview index=%d, w=%d, h=%d",__LINE__, __FUNCTION__, VcaptureSizeIDX,VcaptureSize[VcaptureSizeIDX].width, VcaptureSize[VcaptureSizeIDX].height);
         params.setPreviewSize(previewWidth, previewHeight);
+        LOGE("[%d] %s here setPictureSize index=%d, w=%d, h=%d",__LINE__, __FUNCTION__, captureSizeIDX,
+        captureSize[captureSizeIDX].width, captureSize[captureSizeIDX].height);
         params.setPictureSize(captureSize[captureSizeIDX].width, captureSize[captureSizeIDX].height);
-
+        //previewFormat = 0;
+        //params.setPreviewFormat(pixelformat[previewFormat]);
+        
         camera->setParameters(params.flatten());
         camera->setPreviewDisplay(overlaySurface);
 
@@ -1131,10 +1139,10 @@ void initDefaults() {
     focus_mode = 0;
     fpsRangeIdx = 0;
     previewSizeIDX = ARRAY_SIZE(previewSize) - 6;  /* Default resolution set to WVGA */
-    captureSizeIDX = ARRAY_SIZE(captureSize) - 3;  /* Default capture resolution is 8MP */
-    frameRateIDX = ARRAY_SIZE(frameRate) - 1;      /* Default frame rate is 30 FPS */
-    VcaptureSizeIDX = ARRAY_SIZE(VcaptureSize) - 2;/* Default video record is WVGA */
-    VbitRateIDX = ARRAY_SIZE(VbitRate) - 4;        /*Default video bit rate is 4M */
+    captureSizeIDX = 2;//ARRAY_SIZE(captureSize) - 3;  /* Default capture resolution is 8MP */
+    frameRateIDX = 6;//ARRAY_SIZE(frameRate) - 1;      /* Default frame rate is 30 FPS */
+    VcaptureSizeIDX = 5;//ARRAY_SIZE(VcaptureSize) - 2;/* Default video record is WVGA */
+    VbitRateIDX = 10;//ARRAY_SIZE(VbitRate) - 4;        /*Default video bit rate is 4M */
     thumbSizeIDX = 3;
     compensation = 0.0;
     awb_mode = 0;
@@ -1147,7 +1155,8 @@ void initDefaults() {
     flashIdx = 0;
     rotation = 0;
     zoomIDX = 0;
-    videoCodecIDX = 0;
+    videoCodecIDX = 1;
+    audioCodecIDX = 2;
     gbceIDX = 0;
 #ifdef TARGET_OMAP4
     ///Temporary fix until OMAP3 and OMAP4 3A values are synced
@@ -3671,6 +3680,7 @@ int main(int argc, char *argv[]) {
     unsigned long long st, end, delay;
     timeval current_time;
 
+    LOGE("====x===x==test case camera_test====================");
     gettimeofday(&current_time, 0);
 
     st = current_time.tv_sec * 1000000 + current_time.tv_usec;
