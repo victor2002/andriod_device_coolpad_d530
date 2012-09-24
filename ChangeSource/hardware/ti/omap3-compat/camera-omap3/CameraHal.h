@@ -94,10 +94,10 @@ extern "C" {
 #define VIDEO_DEVICE        "/dev/video5"
 #define MIN_WIDTH           128
 #define MIN_HEIGHT          96
-#define PICTURE_WIDTH   3264 /* 5mp - 2560. 8mp - 3280 */ /* Make sure it is a multiple of 16. */
-#define PICTURE_HEIGHT  2448 /* 5mp - 2048. 8mp - 2464 */ /* Make sure it is a multiple of 16. */
-#define PREVIEW_WIDTH 176
-#define PREVIEW_HEIGHT 144
+#define PICTURE_WIDTH   1600 //3264 /* 5mp - 2560. 8mp - 3280 */ /* Make sure it is a multiple of 16. */
+#define PICTURE_HEIGHT  1200 //2448 /* 5mp - 2048. 8mp - 2464 */ /* Make sure it is a multiple of 16. */
+#define PREVIEW_WIDTH 640 //176
+#define PREVIEW_HEIGHT 480 //144
 #define CAPTURE_8MP_WIDTH        3280
 #define CAPTURE_8MP_HEIGHT       2464
 #define PIXEL_FORMAT           V4L2_PIX_FMT_UYVY

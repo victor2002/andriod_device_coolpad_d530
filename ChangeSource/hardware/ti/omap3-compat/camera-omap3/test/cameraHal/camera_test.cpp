@@ -908,18 +908,21 @@ int configureRecorder() {
 
     sprintf(vbit_string,"video-param-encoding-bitrate=%u", VbitRate[VbitRateIDX].bit_rate);
     String8 bit_rate(vbit_string);
+    LOGE("[%d] %s setParameters",__LINE__, __FUNCTION__);
     if ( recorder->setParameters(bit_rate) < 0 ) {
         printf("error while configuring bit rate\n");
 
         return -1;
     }
 
+    LOGE("[%d] %s setCamera",__LINE__, __FUNCTION__);
     if ( recorder->setCamera(camera->remote()) < 0 ) {
         printf("error while setting the camera\n");
 
         return -1;
     }
 
+    LOGE("[%d] %s setVideoSource",__LINE__, __FUNCTION__);
     if ( recorder->setVideoSource(VIDEO_SOURCE_CAMERA) < 0 ) {
         printf("error while configuring camera video source\n");
 
@@ -928,12 +931,14 @@ int configureRecorder() {
     }
 
 
+    LOGE("[%d] %s setAudioSource",__LINE__, __FUNCTION__);
     if ( recorder->setAudioSource(AUDIO_SOURCE_MIC) < 0 ) {
         printf("error while configuring camera audio source\n");
         LOGE("[%d] %s ====x===x==test case camera_test== here ==================",__LINE__, __FUNCTION__);
         return -1;
     }
 
+    LOGE("[%d] %s setOutputFormat",__LINE__, __FUNCTION__);
     if ( recorder->setOutputFormat(outputFormat[outputFormatIDX].type) < 0 ) {
         printf("error while configuring output format\n");
 
@@ -952,6 +957,7 @@ int configureRecorder() {
         return -1;
     }
 
+    LOGE("[%d] %s setOutputFile",__LINE__, __FUNCTION__);
     if ( recorder->setOutputFile(fd, 0, 0) < 0 ) {
         printf("error while configuring video filename\n");
 
@@ -960,42 +966,47 @@ int configureRecorder() {
 
     recording_counter++;
 
-    LOGE("[%d] %s ====x===x==test case camera_test== here ==================",__LINE__, __FUNCTION__);
+    LOGE("[%d] %s setVideoFrameRate",__LINE__, __FUNCTION__);
     if ( recorder->setVideoFrameRate(frameRate[frameRateIDX].fps) < 0 ) {
         printf("error while configuring video framerate\n");
 
         return -1;
     }
 
+    LOGE("[%d] %s setVideoSize",__LINE__, __FUNCTION__);
     if ( recorder->setVideoSize(VcaptureSize[VcaptureSizeIDX].width, VcaptureSize[VcaptureSizeIDX].height) < 0 ) {
         printf("error while configuring video size\n");
 
         return -1;
     }
 
+    LOGE("[%d] %s setVideoEncoder",__LINE__, __FUNCTION__);
     if ( recorder->setVideoEncoder(videoCodecs[videoCodecIDX].type) < 0 ) {
         printf("error while configuring video codec\n");
 
         return -1;
     }
 
+    LOGE("[%d] %s setAudioEncoder",__LINE__, __FUNCTION__);
     if ( recorder->setAudioEncoder(audioCodecs[audioCodecIDX].type) < 0 ) {
         printf("error while configuring audio codec\n");
 
         return -1;
     }
 
+    LOGE("[%d] %s setPreviewSurface",__LINE__, __FUNCTION__);
     if ( recorder->setPreviewSurface( overlayControl->getSurface() ) < 0 ) {
         printf("error while configuring preview surface\n");
 
         return -1;
     }
 
-    LOGE("[%d] %s ====x===x==test case camera_test== here ==================",__LINE__, __FUNCTION__);
+    LOGE("[%d] %s finish here ==================",__LINE__, __FUNCTION__);
     return 0;
 }
 
 int startRecording() {
+    status_t stat;
     if ( ( NULL == recorder.get() ) || ( NULL == camera.get() ) ) {
         printf("invalid recorder and/or camera references\n");
 
@@ -1004,17 +1015,22 @@ int startRecording() {
 
     camera->unlock();
 
+    LOGE("[%d] %s prepare",__LINE__, __FUNCTION__);
     if ( recorder->prepare() < 0 ) {
         printf("recorder prepare failed\n");
 
         return -1;
     }
 
+    LOGE("[%d] %s start",__LINE__, __FUNCTION__);
+    stat = camera->startRecording();
+    LOGE("[%d] %s start status=%d",__LINE__, __FUNCTION__, stat);
     if ( recorder->start() < 0 ) {
         printf("recorder start failed\n");
 
         return -1;
     }
+    LOGE("[%d] %s end",__LINE__, __FUNCTION__);
 
     return 0;
 }
@@ -1038,7 +1054,7 @@ int stopRecording() {
 int openCamera() {
 
     printf("openCamera(camera_index=%d)\n", camera_index);
-    camera = Camera::connect();//camera_index);
+    camera = Camera::connect(camera_index);
 
     if ( NULL == camera.get() ) {
         printf("Unable to connect to CameraService\n");
@@ -1079,6 +1095,8 @@ int startPreview() {
         }
 
         if(!nullOverlay) {
+            LOGE("[%d] %s createPreviewSurface w=%d, h=%d",__LINE__, __FUNCTION__,
+                 previewWidth, previewHeight);
             if ( createPreviewSurface(previewWidth, previewHeight ) < 0 ) {
                 printf("Error while creating preview surface\n");
                 return -1;
@@ -1089,6 +1107,7 @@ int startPreview() {
 
         if(!hardwareActive)
         {
+            LOGE("[%d] %s openCamera",__LINE__, __FUNCTION__);
             if ( openCamera() < 0 ) {
                 printf("Camera initialization failed\n");
 
@@ -1097,7 +1116,7 @@ int startPreview() {
 
         }
 
-        LOGE("[%d] %s here preview index=%d, w=%d, h=%d",__LINE__, __FUNCTION__, VcaptureSizeIDX,VcaptureSize[VcaptureSizeIDX].width, VcaptureSize[VcaptureSizeIDX].height);
+        LOGE("[%d] %s setPreviewSize index=%d, w=%d, h=%d",__LINE__, __FUNCTION__, VcaptureSizeIDX,VcaptureSize[VcaptureSizeIDX].width, VcaptureSize[VcaptureSizeIDX].height);
         params.setPreviewSize(previewWidth, previewHeight);
         LOGE("[%d] %s here setPictureSize index=%d, w=%d, h=%d",__LINE__, __FUNCTION__, captureSizeIDX,
         captureSize[captureSizeIDX].width, captureSize[captureSizeIDX].height);
@@ -1105,11 +1124,14 @@ int startPreview() {
         //previewFormat = 0;
         //params.setPreviewFormat(pixelformat[previewFormat]);
         
+        LOGE("[%d] %s createPreviewSurface",__LINE__, __FUNCTION__);
         camera->setParameters(params.flatten());
+        LOGE("[%d] %s setPreviewDisplay",__LINE__, __FUNCTION__);
         camera->setPreviewDisplay(overlaySurface);
 
         if(!hardwareActive) prevcnt = 0;
 
+        LOGE("[%d] %s startPreview",__LINE__, __FUNCTION__);
         camera->startPreview();
 
         previewRunning = true;
@@ -1545,6 +1567,7 @@ int functional_menu() {
             break;
 
         case '2':
+            LOGE("===2 stopPreview =====");
             stopPreview();
 
             if ( recordingMode ) {
@@ -1608,28 +1631,33 @@ int functional_menu() {
 
         case '6':
 
+            LOGE("===6 start record========");
             if ( !recordingMode ) {
 
                 recordingMode = true;
 
+                LOGE("===6 startPreview ========");
                 if ( startPreview() < 0 ) {
                     printf("Error while starting preview\n");
 
                     return -1;
                 }
 
+                LOGE("===6 openRecorder ========");
                 if ( openRecorder() < 0 ) {
                     printf("Error while openning video recorder\n");
 
                     return -1;
                 }
 
+                LOGE("===6 configureRecorder ========");
                 if ( configureRecorder() < 0 ) {
                     printf("Error while configuring video recorder\n");
 
                     return -1;
                 }
 
+                LOGE("===6 startRecording ========");
                 if ( startRecording() < 0 ) {
                     printf("Error while starting video recording\n");
 

@@ -69,7 +69,7 @@ typedef struct {
 int CameraHal::camera_device = 0;
 wp<CameraHardwareInterface> CameraHal::singleton[];
 const char CameraHal::supportedPictureSizes [] = "1600x1200,1280x960,1024x768,800x600,640x480,320x240";
-const char CameraHal::supportedPreviewSizes [] = "320x240";
+const char CameraHal::supportedPreviewSizes [] = "640x480,320x240";
 const char CameraHal::supportedFPS [] = "20";
 const char CameraHal::supportedThumbnailSizes []= "80x60";
 const char CameraHal::PARAMS_DELIMITER []= ",";
@@ -79,7 +79,7 @@ const supported_resolution CameraHal::supportedPictureRes[] = { {1600, 1200} ,
                                                      {640, 480}   , {320, 240} };
 
 const supported_resolution CameraHal::supportedPreviewRes[] = { 
-    //{640, 480}, //vga
+    {640, 480}, //vga
     {320, 240} //qvga
 };
 
@@ -263,7 +263,7 @@ void CameraHal::initDefaultParameters()
 
     LOG_FUNCTION_NAME
 
-    p.setPreviewSize(MIN_WIDTH, MIN_HEIGHT);
+    p.setPreviewSize(PREVIEW_WIDTH, PREVIEW_HEIGHT);
     //p.setPreviewFrameRate(30);
     p.setPreviewFrameRate(15);
     p.setPreviewFormat(CameraParameters::PIXEL_FORMAT_YUV422I);
@@ -1262,6 +1262,7 @@ int CameraHal::CameraStart()
                 goto fail_loop;
             }else{
                 nCameraBuffersQueued++;
+                LOGE("[%d] %s nCameraBuffersQueued++ (%d)",__LINE__, __FUNCTION__, nCameraBuffersQueued);
             }
          }
          else LOGI("CameraStart::Could not queue buffer %d to Camera because it is being held by Overlay", i);
@@ -1326,6 +1327,7 @@ int CameraHal::CameraStop()
 
     while(nCameraBuffersQueued){
         nCameraBuffersQueued--;
+        LOGE("[%d] %s nCameraBuffersQueued-- (%d)",__LINE__, __FUNCTION__, nCameraBuffersQueued);
     }
 
 #ifdef DEBUG_LOG
@@ -1381,7 +1383,11 @@ void CameraHal::queueToOverlay(int index)
         if (ioctl(camera_device, VIDIOC_QBUF, &v4l2_cam_buffer[index]) < 0) {
             LOGE("VIDIOC_QBUF Failed, line=%d",__LINE__);
         }
-        else nCameraBuffersQueued++;
+        else 
+        {
+            nCameraBuffersQueued++;
+            LOGE("[%d] %s nCameraBuffersQueued++ (%d)",__LINE__, __FUNCTION__, nCameraBuffersQueued);
+        }
     }
     else
     {
@@ -1403,6 +1409,7 @@ void CameraHal::queueToOverlay(int index)
                         LOGE("VIDIOC_QBUF Failed, line=%d. Buffer lost forever.",__LINE__);
                     }else{
                         nCameraBuffersQueued++;
+                        LOGE("[%d] %s nCameraBuffersQueued++ (%d)",__LINE__, __FUNCTION__, nCameraBuffersQueued);
                         LOGD("Reclaiming buffer [%d] from Overlay", k);
                     }
                 }
@@ -1505,6 +1512,7 @@ void CameraHal::nextPreview()
         goto EXIT;
     }else{
         nCameraBuffersQueued--;
+        LOGE("[%d] %s nCameraBuffersQueued-- (%d)",__LINE__, __FUNCTION__, nCameraBuffersQueued);
     }
     mCurrentTime[cfilledbuffer.index] = s2ns(cfilledbuffer.timestamp.tv_sec) + us2ns(cfilledbuffer.timestamp.tv_usec);
 
@@ -1528,7 +1536,11 @@ void CameraHal::nextPreview()
                 if (ioctl(camera_device, VIDIOC_QBUF, &v4l2_cam_buffer[overlaybufferindex]) < 0) {
                     LOGE("VIDIOC_QBUF Failed, line=%d",__LINE__);
                 }
-                else nCameraBuffersQueued++;
+                else 
+                {
+                    nCameraBuffersQueued++;
+                    LOGE("[%d] %s nCameraBuffersQueued++ (%d)",__LINE__, __FUNCTION__, nCameraBuffersQueued);
+                }
                 LOGD("Didnt queue this buffer to VE.");
                 if (mPrevTime < mCurrentTime[overlaybufferindex])
                     mPrevTime = mCurrentTime[overlaybufferindex];
@@ -1537,6 +1549,7 @@ void CameraHal::nextPreview()
             }
             else
             {
+                LOGD("queue this buffer to VE.");
                 buffers_queued_to_ve[overlaybufferindex] = 1;
                 if (mPrevTime > mCurrentTime[overlaybufferindex])
                 {
@@ -1559,6 +1572,7 @@ void CameraHal::nextPreview()
                 LOGE("VIDIOC_QBUF Failed. line=%d",__LINE__);
             }else{
                 nCameraBuffersQueued++;
+                LOGE("[%d] %s nCameraBuffersQueued++ (%d)",__LINE__, __FUNCTION__, nCameraBuffersQueued);
             }
         }
     }
@@ -3304,7 +3318,11 @@ void CameraHal::stopRecording()
             if (ioctl(camera_device, VIDIOC_QBUF, &v4l2_cam_buffer[i]) < 0) {
                 LOGE("VIDIOC_QBUF Failed. line=%d",__LINE__);
             }
-            else nCameraBuffersQueued++;
+            else 
+            {
+                nCameraBuffersQueued++;
+                LOGE("[%d] %s nCameraBuffersQueued++ (%d)",__LINE__, __FUNCTION__, nCameraBuffersQueued);
+            }
             buffers_queued_to_ve[i] = 0;
             LOGD("Buffer #%d was not returned by VE. Reclaiming it !!!!!!!!!!!!!!!!!!!!!!!!", i);
         }
@@ -3344,6 +3362,7 @@ void CameraHal::releaseRecordingFrame(const sp<IMemory>& mem)
     else
     {
         nCameraBuffersQueued++;
+        LOGE("[%d] %s nCameraBuffersQueued++ (%d)",__LINE__, __FUNCTION__, nCameraBuffersQueued);
     }
 
     return;
@@ -4672,6 +4691,7 @@ void CameraHal::setCallbacks(notify_callback notify_cb,
     Mutex::Autolock lock(mLock);
     mNotifyCb = notify_cb;
     mDataCb = data_cb;
+    LOGE("[%d] %s Do set callbacks",__LINE__, __FUNCTION__);
     mDataCbTimestamp = data_cb_timestamp;
     mCallbackCookie = user;
 }
@@ -4758,12 +4778,29 @@ extern "C" int HAL_getNumberOfCameras()
     return numCameras;
 }
 
+extern "C" void HAL_getCameraInfo(int cameraId, struct CameraInfo* cameraInfo)
+{
+    int face_value = CAMERA_FACING_BACK;
+    int orientation = 0;
+    char *valstr = NULL;
 
+    // FIXME: Zoom3 has only one camera facing back.
+    cameraInfo->facing = face_value;
+    cameraInfo->orientation = orientation;
+}
 extern "C" sp<CameraHardwareInterface> openCameraHardware()
 {
     //LOGD("opening ti camera hal (cameraId:%d)\n", 0);
     return CameraHal::createInstance(0);
 }
+
+
+extern "C" sp<CameraHardwareInterface> HAL_openCameraHardware(int cameraId)
+{
+    LOGD("opening ti camera hal (cameraId:%d)\n", cameraId);
+    return CameraHal::createInstance(0);
+}
+
 
 
 }; // namespace android
