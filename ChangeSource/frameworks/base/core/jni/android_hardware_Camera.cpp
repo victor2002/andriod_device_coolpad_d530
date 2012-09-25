@@ -303,7 +303,7 @@ static jint android_hardware_Camera_getNumberOfCameras(JNIEnv *env, jobject thiz
     return 1;//Camera::getNumberOfCameras();
 }
 
-/*static void android_hardware_Camera_getCameraInfo(JNIEnv *env, jobject thiz,
+static void android_hardware_Camera_getCameraInfo(JNIEnv *env, jobject thiz,
     jint cameraId, jobject info_obj)
 {
     CameraInfo cameraInfo;
@@ -315,7 +315,7 @@ static jint android_hardware_Camera_getNumberOfCameras(JNIEnv *env, jobject thiz
     }
     env->SetIntField(info_obj, fields.facing, cameraInfo.facing);
     env->SetIntField(info_obj, fields.orientation, cameraInfo.orientation);
-}*/
+}
 
 // connect to camera service
 static void android_hardware_Camera_native_setup(JNIEnv *env, jobject thiz,
@@ -596,12 +596,12 @@ static void android_hardware_Camera_setDisplayOrientation(JNIEnv *env, jobject t
 //-------------------------------------------------
 
 static JNINativeMethod camMethods[] = {
-  //{ "getNumberOfCameras",
-  //  "()I",
-  //  (void *)android_hardware_Camera_getNumberOfCameras },
-  //{ "getCameraInfo",
-  //  "(ILandroid/hardware/Camera$CameraInfo;)V",
-  //  (void*)android_hardware_Camera_getCameraInfo },
+  { "getNumberOfCameras",
+    "()I",
+    (void *)android_hardware_Camera_getNumberOfCameras },
+  { "getCameraInfo",
+    "(ILandroid/hardware/Camera$CameraInfo;)V",
+    (void*)android_hardware_Camera_getCameraInfo },
   { "native_setup",
     "(Ljava/lang/Object;I)V",
     (void*)android_hardware_Camera_native_setup },
@@ -696,8 +696,8 @@ int register_android_hardware_Camera(JNIEnv *env)
     field fields_to_find[] = {
         { "android/hardware/Camera", "mNativeContext",   "I", &fields.context },
         { "android/view/Surface",    ANDROID_VIEW_SURFACE_JNI_ID, "I", &fields.surface },
-        //{ "android/hardware/Camera$CameraInfo", "facing",   "I", &fields.facing },
-        //{ "android/hardware/Camera$CameraInfo", "orientation",   "I", &fields.orientation },
+        { "android/hardware/Camera$CameraInfo", "facing",   "I", &fields.facing },
+        { "android/hardware/Camera$CameraInfo", "orientation",   "I", &fields.orientation },
     };
 
     if (find_fields(env, fields_to_find, NELEM(fields_to_find)) < 0)

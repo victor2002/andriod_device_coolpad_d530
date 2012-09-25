@@ -142,17 +142,54 @@ public class Camera {
     /**
      * Returns the number of physical cameras available on this device.
      */
-    //public native static int getNumberOfCameras();
+    public native static int getNumberOfCameras();
 
     /**
      * Returns the information about a particular camera.
      * If {@link #getNumberOfCameras()} returns N, the valid id is 0 to N-1.
      */
-    //public native static void getCameraInfo(int cameraId, CameraInfo cameraInfo);
+    public native static void getCameraInfo(int cameraId, CameraInfo cameraInfo);
 
     /**
      * Information about a camera
      */
+    public static class CameraInfo {
+        /**
+         * The facing of the camera is opposite to that of the screen.
+         */
+        public static final int CAMERA_FACING_BACK = 0;
+
+        /**
+         * The facing of the camera is the same as that of the screen.
+         */
+        public static final int CAMERA_FACING_FRONT = 1;
+
+        /**
+         * The direction that the camera faces to. It should be
+         * CAMERA_FACING_BACK or CAMERA_FACING_FRONT.
+         */
+        public int facing;
+
+        /**
+         * The orientation of the camera image. The value is the angle that the
+         * camera image needs to be rotated clockwise so it shows correctly on
+         * the display in its natural orientation. It should be 0, 90, 180, or 270.
+         *
+         * For example, suppose a device has a naturally tall screen. The
+         * back-facing camera sensor is mounted in landscape. You are looking at
+         * the screen. If the top side of the camera sensor is aligned with the
+         * right edge of the screen in natural orientation, the value should be
+         * 90. If the top side of a front-facing camera sensor is aligned with
+         * the right of the screen, the value should be 270.
+         *
+         * @see #setDisplayOrientation(int)
+         * @see Parameters#setRotation(int)
+         * @see Parameters#setPreviewSize(int, int)
+         * @see Parameters#setPictureSize(int, int)
+         * @see Parameters#setJpegThumbnailSize(int, int)
+         */
+        public int orientation;
+    };
 
     /**
      * Creates a new Camera object to access a particular hardware camera.
@@ -179,6 +216,9 @@ public class Camera {
      * @throws RuntimeException if connection to the camera service fails (for
      *     example, if the camera is in use by another process).
      */
+    public static Camera open(int cameraId) {
+        return new Camera(cameraId);
+    }
 
     /**
      * Creates a new Camera object to access the first back-facing camera on the
@@ -187,10 +227,18 @@ public class Camera {
      * @see #open(int)
      */
     public static Camera open() {
-        return new Camera();
+        int numberOfCameras = getNumberOfCameras();
+        CameraInfo cameraInfo = new CameraInfo();
+        for (int i = 0; i < numberOfCameras; i++) {
+            getCameraInfo(i, cameraInfo);
+            if (cameraInfo.facing == CameraInfo.CAMERA_FACING_BACK) {
+                return new Camera(i);
+            }
+        }
+        return null;
     }
 
-    Camera() {
+    Camera(int cameraId) {
         mShutterCallback = null;
         mRawImageCallback = null;
         mJpegCallback = null;
@@ -207,7 +255,7 @@ public class Camera {
             mEventHandler = null;
         }
 
-        native_setup(new WeakReference<Camera>(this), 0);
+        native_setup(new WeakReference<Camera>(this), cameraId);
     }
 
     protected void finalize() {

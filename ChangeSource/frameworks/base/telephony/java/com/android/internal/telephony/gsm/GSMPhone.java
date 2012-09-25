@@ -1507,7 +1507,7 @@ public class GSMPhone extends PhoneBase {
 
     public boolean getIccState(int i)
     {
-        return true;
+        return false;
     }
     
 }

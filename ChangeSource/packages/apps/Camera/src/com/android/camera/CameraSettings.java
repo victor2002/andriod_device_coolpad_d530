@@ -99,8 +99,8 @@ public class CameraSettings {
 
     // Samsung camera unadvertised modes
     //private static boolean mSamsungCamMode; // camcorder mode
-    private static boolean mSamsungContinuousAf;
-    private static boolean mSamsungSpecialSettings; // slow_ae and video_recording_gamma
+    //private static boolean mSamsungContinuousAf;
+    //private static boolean mSamsungSpecialSettings; // slow_ae and video_recording_gamma
     //private static boolean mIsOMAP4Camera;
 
     private static boolean sFocusCamcorderAtStart = true;
@@ -317,8 +317,8 @@ public class CameraSettings {
 
         mSupportsNvHFR = mContext.getResources().getBoolean(R.bool.supportsNvHighBitrateFullHD);
         //mSamsungCamMode = mContext.getResources().getBoolean(R.bool.needsSamsungCamMode);
-        mSamsungContinuousAf = mContext.getResources().getBoolean(R.bool.needsSamsungContinuousAf);
-        mSamsungSpecialSettings = mContext.getResources().getBoolean(R.bool.needsSamsungSpecialSettings);
+        //mSamsungContinuousAf = mContext.getResources().getBoolean(R.bool.needsSamsungContinuousAf);
+        //mSamsungSpecialSettings = mContext.getResources().getBoolean(R.bool.needsSamsungSpecialSettings);
     }
 
     private static boolean removePreference(PreferenceGroup group, String key) {
@@ -521,7 +521,7 @@ public class CameraSettings {
             params.set("nv-mode-hint", on ? "video" : "still");
         } 
 
-        if (on && params.get("focus-mode-values").indexOf("continuous-video") != -1) {
+        /*if (on && params.get("focus-mode-values").indexOf("continuous-video") != -1) {
             // Galaxy S2
             params.set("focus-mode", "continuous-video");
         }
@@ -529,9 +529,9 @@ public class CameraSettings {
         if (on && params.get("focus-mode-values").indexOf("caf") != -1) {
             // OMAP4
             params.set("focus-mode", "caf");
-        }
+        }*/
 
-        if (mSamsungSpecialSettings) {
+        /*if (mSamsungSpecialSettings) {
             params.set("video_recording_gamma", on ? "on" : "off");
             params.set("slow_ae", on ? "on" : "off");
             params.set("iso", on ? "movie" : "auto");
@@ -540,7 +540,7 @@ public class CameraSettings {
             if (on) {
                 params.set("antibanding", "50hz");
             }
-        }
+        }*/
     }
 
     /**
@@ -549,13 +549,13 @@ public class CameraSettings {
      * @param params
      * @param on
      */
-    public static void setContinuousAf(Parameters params, boolean on) {
+    /*public static void setContinuousAf(Parameters params, boolean on) {
         if (params.get("enable-caf") != null) {
             params.set("enable-caf", on ? "on" : "off");
         } else if (mSamsungContinuousAf) {
             params.set("continuous_af", on ? 1 : 0);
         }
-    }
+    }*/
 
     /**
      * Changes nv-sensor-mode to enable higher framerate video recording 

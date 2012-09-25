@@ -1157,9 +1157,13 @@ void CameraService::Client::dataCallback(int32_t msgType, const sp<IMemory>& dat
     }
 #endif
 }
-
+#ifdef OMAP_ENHANCEMENT
 void CameraService::Client::dataCallbackTimestamp(nsecs_t timestamp, int32_t msgType,
-                                                  const sp<IMemory>& dataPtr, void* user)
+        const sp<IMemory>& dataPtr, void* user, uint32_t offset, uint32_t stride)
+#else
+void CameraService::Client::dataCallbackTimestamp(nsecs_t timestamp,
+        int32_t msgType, const sp<IMemory>& dataPtr, void* user)
+#endif
 {
     LOGV("dataCallbackTimestamp(%d)", msgType);
 
@@ -1173,7 +1177,11 @@ void CameraService::Client::dataCallbackTimestamp(nsecs_t timestamp, int32_t msg
         LOGE("Null data returned in data with timestamp callback");
         if (c != NULL) {
             c->notifyCallback(CAMERA_MSG_ERROR, UNKNOWN_ERROR, 0);
+#ifdef OMAP_ENHANCEMENT
+            c->dataCallbackTimestamp(0, msgType, NULL, offset, stride);
+#else
             c->dataCallbackTimestamp(0, msgType, NULL);
+#endif
         }
         return;
     }

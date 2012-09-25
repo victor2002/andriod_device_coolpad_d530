@@ -1129,6 +1129,7 @@ status_t StagefrightRecorder::setupVideoEncoder(sp<MediaSource> *source) {
     enc_meta->setInt32(kKeyIFramesInterval, mIFramesIntervalSec);
     enc_meta->setInt32(kKeyStride, stride);
     enc_meta->setInt32(kKeySliceHeight, sliceHeight);
+    colorFormat = OMX_COLOR_FormatYCbYCr; //force to ycbcr
     enc_meta->setInt32(kKeyColorFormat, colorFormat);
 #if defined (OMAP_ENHANCEMENT) && defined (TARGET_OMAP4)
     enc_meta->setInt32(kKeyPaddedWidth, paddedWidth);

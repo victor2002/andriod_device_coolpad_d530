@@ -218,7 +218,7 @@ CameraSource::CameraSource(const sp<Camera> &camera)
 
     mMeta = new MetaData;
     mMeta->setCString(kKeyMIMEType, MEDIA_MIMETYPE_VIDEO_RAW);
-    mMeta->setInt32(kKeyColorFormat, OMX_COLOR_FormatYUV420SemiPlanar);//colorFormat);
+    mMeta->setInt32(kKeyColorFormat, OMX_COLOR_FormatYCbYCr);//colorFormat);
     mMeta->setInt32(kKeyWidth, width);
     mMeta->setInt32(kKeyHeight, height);
     mMeta->setInt32(kKeyStride, stride);

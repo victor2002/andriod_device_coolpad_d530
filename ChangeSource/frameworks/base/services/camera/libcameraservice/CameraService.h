@@ -139,9 +139,13 @@ private:
 
         static      void        notifyCallback(int32_t msgType, int32_t ext1, int32_t ext2, void* user);
         static      void        dataCallback(int32_t msgType, const sp<IMemory>& dataPtr, void* user);
+#ifdef OMAP_ENHANCEMENT
+        static      void        dataCallbackTimestamp(nsecs_t timestamp, int32_t msgType,
+                                        const sp<IMemory>& dataPtr, void* user, uint32_t offset=0, uint32_t stride=0);
+#else
         static      void        dataCallbackTimestamp(nsecs_t timestamp, int32_t msgType,
                                                       const sp<IMemory>& dataPtr, void* user);
-
+#endif
         static      sp<Client>  getClientFromCookie(void* user);
 
                     void        handlePreviewData(const sp<IMemory>&);

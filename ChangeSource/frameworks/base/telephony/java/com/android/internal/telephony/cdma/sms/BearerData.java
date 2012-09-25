@@ -89,6 +89,8 @@ public final class BearerData {
     public static final int MESSAGE_TYPE_DELIVER_REPORT = 0x07;
     public static final int MESSAGE_TYPE_SUBMIT_REPORT  = 0x08;
 
+    protected static final boolean DBG = false;
+	
     public int messageType;
 
     /**
@@ -257,7 +259,7 @@ public final class BearerData {
             int second = IccUtils.cdmaBcdByteToInt(data[5]);
             if (second < 0 || second > 59) return null;
             ts.second = second;
-            Log.d("SMS", " TimeStamp: year"+ts.year+" month"+ts.month+
+            if (DBG) Log.d("SMS", " TimeStamp: year"+ts.year+" month"+ts.month+
             " monthDay"+ts.monthDay+" hour"+ts.hour+" minute"+ts.minute+
             " second"+ts.second);
             return ts;
