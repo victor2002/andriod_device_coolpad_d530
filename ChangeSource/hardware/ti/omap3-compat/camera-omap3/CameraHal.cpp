@@ -67,7 +67,7 @@ typedef struct {
 } mapping_data_t;
 
 int CameraHal::camera_device = 0;
-wp<CameraHardwareInterface> CameraHal::singleton[];
+wp<CameraHardwareInterface> CameraHal::singleton;
 const char CameraHal::supportedPictureSizes [] = "1600x1200,1280x960,1024x768,800x600,640x480,320x240";
 const char CameraHal::supportedPreviewSizes [] = "640x480,320x240";
 const char CameraHal::supportedFPS [] = "20";
@@ -97,7 +97,7 @@ int camerahal_strcat(char *dst, const char *src, size_t size)
     return 0;
 }
 
-CameraHal::CameraHal(int cameraId)
+CameraHal::CameraHal()
                      :mParameters(),
                      mOverlay(NULL),
                      mPreviewRunning(0),
@@ -120,7 +120,7 @@ CameraHal::CameraHal(int cameraId)
     gettimeofday(&ppm_start, NULL);
 #endif
 
-    mCameraIndex = cameraId;
+    //mCameraIndex = cameraId;
     isStart_FW3A = false;
     isStart_FW3A_AF = false;
     isStart_FW3A_CAF = false;
@@ -263,9 +263,8 @@ void CameraHal::initDefaultParameters()
 
     LOG_FUNCTION_NAME
 
-    p.setPreviewSize(PREVIEW_WIDTH, PREVIEW_HEIGHT);
-    //p.setPreviewFrameRate(30);
-    p.setPreviewFrameRate(15);
+    p.setPreviewSize(MIN_WIDTH, MIN_HEIGHT);
+    p.setPreviewFrameRate(15);//from log, it is 15
     p.setPreviewFormat(CameraParameters::PIXEL_FORMAT_YUV422I);
 
     p.setPictureSize(PICTURE_WIDTH, PICTURE_HEIGHT);
@@ -545,7 +544,7 @@ CameraHal::~CameraHal()
         mOverlay->destroy();
     }
 
-    singleton[mCameraIndex].clear();
+    singleton.clear();
 
     LOGD("<<< Release");
 }
@@ -1276,6 +1275,13 @@ int CameraHal::CameraStart()
 
     }
 
+    type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+    err = ioctl(camera_device, VIDIOC_STREAMON, &type);
+    if ( err < 0) {
+        LOGE("VIDIOC_STREAMON Failed");
+        goto fail_loop;
+    }
+
     if( ioctl(camera_device, VIDIOC_G_CROP, &mInitialCrop) < 0 ){
         LOGE("[%s]: ERROR VIDIOC_G_CROP failed", strerror(errno));
         return -1;
@@ -1290,13 +1296,7 @@ int CameraHal::CameraStart()
 
         mZoomCurrentIdx = mZoomTargetIdx;
         mParameters.set("zoom", (int) mZoomCurrentIdx);
-    }
-
-    type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-    err = ioctl(camera_device, VIDIOC_STREAMON, &type);
-    if ( err < 0) {
-        LOGE("VIDIOC_STREAMON Failed");
-        goto fail_loop;
+        mNotifyCb(CAMERA_MSG_ZOOM, (int) mZoomCurrentIdx, 1, mCallbackCookie);
     }
 
     LOG_FUNCTION_NAME_EXIT
@@ -2918,12 +2918,8 @@ void CameraHal::procThread()
 
 #if JPEG
 
-                    /*if ( mBurstShots > 1 ){
-                        JpegPictureCallback(CAMERA_MSG_BURST_IMAGE, JPEGPictureMemBase, PictureCallbackCookie);
-                    }
-                    else {
-                        JpegPictureCallback(CAMERA_MSG_COMPRESSED_IMAGE, JPEGPictureMemBase, PictureCallbackCookie);
-                    }*/
+                    JpegPictureCallback(CAMERA_MSG_COMPRESSED_IMAGE, JPEGPictureMemBase, PictureCallbackCookie);
+
 #else
 
                     JpegPictureCallback(CAMERA_MSG_COMPRESSED_IMAGE, NULL, PictureCallbackCookie);
@@ -4665,20 +4661,20 @@ sp<IMemoryHeap> CameraHal::getPreviewHeap() const
     return 0;
 }
 
-sp<CameraHardwareInterface> CameraHal::createInstance(int cameraId)
+sp<CameraHardwareInterface> CameraHal::createInstance()
 {
     LOG_FUNCTION_NAME
 
-    if (singleton[cameraId] != 0) {
-        sp<CameraHardwareInterface> hardware = singleton[cameraId].promote();
+    if (singleton != 0) {
+        sp<CameraHardwareInterface> hardware = singleton.promote();
         if (hardware != 0) {
             return hardware;
         }
     }
 
-    sp<CameraHardwareInterface> hardware(new CameraHal(cameraId));
+    sp<CameraHardwareInterface> hardware(new CameraHal());
 
-    singleton[cameraId] = hardware;
+    singleton = hardware;
     return hardware;
 }
 
@@ -4761,44 +4757,31 @@ status_t CameraHal::sendCommand(int32_t cmd, int32_t arg1, int32_t arg2)
 
 extern "C" int HAL_getNumberOfCameras()
 {
-    int numCameras = 0;
-
-    // FIXME: Zoom3 has only one camera device.
-    numCameras = 1;
-    if ( 0 == numCameras )
-    {
-        LOGE("No cameras supported in Camera HAL implementation");
-        return 0;
-    }
-    else
-    {
-        LOGD("Cameras found %d", numCameras);
-    }
-
-    return numCameras;
+    return 1;
 }
 
 extern "C" void HAL_getCameraInfo(int cameraId, struct CameraInfo* cameraInfo)
 {
     int face_value = CAMERA_FACING_BACK;
     int orientation = 0;
-    char *valstr = NULL;
 
     // FIXME: Zoom3 has only one camera facing back.
     cameraInfo->facing = face_value;
     cameraInfo->orientation = orientation;
 }
+
+//original interface from cm7
 extern "C" sp<CameraHardwareInterface> openCameraHardware()
 {
-    //LOGD("opening ti camera hal (cameraId:%d)\n", 0);
-    return CameraHal::createInstance(0);
+    LOGD("opening ti camera hal\n");
+    return CameraHal::createInstance();
 }
 
-
+//only for 2.3
 extern "C" sp<CameraHardwareInterface> HAL_openCameraHardware(int cameraId)
 {
     LOGD("opening ti camera hal (cameraId:%d)\n", cameraId);
-    return CameraHal::createInstance(0);
+    return openCameraHardware();
 }
 
 
