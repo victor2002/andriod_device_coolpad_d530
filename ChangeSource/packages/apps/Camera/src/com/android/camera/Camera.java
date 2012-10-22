@@ -31,7 +31,7 @@ import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-//import android.hardware.Camera.CameraInfo;
+import android.hardware.Camera.CameraInfo;
 import android.hardware.Camera.Parameters;
 import android.hardware.Camera.PictureCallback;
 import android.hardware.Camera.Size;
@@ -49,7 +49,6 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.os.MessageQueue;
-//import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.provider.Settings;
 import android.text.format.DateFormat;
@@ -224,8 +223,8 @@ public class Camera extends BaseCamera implements View.OnClickListener,
     private final Handler mHandler = new MainHandler();
 
     // multiple cameras support
-    //private int mNumberOfCameras = 1;
-    private int mCameraId = 0;
+    private int mNumberOfCameras;
+    private int mCameraId;
     private SharedPreferences prefs;
     private int mImageWidth = 0;
     private int mImageHeight = 0;
@@ -814,12 +813,12 @@ public class Camera extends BaseCamera implements View.OnClickListener,
             // documentation.
             int rotation = 0;
             if (mOrientation != OrientationEventListener.ORIENTATION_UNKNOWN) {
-                /*CameraInfo info = CameraHolder.instance().getCameraInfo()[mCameraId];
+                CameraInfo info = CameraHolder.instance().getCameraInfo()[mCameraId];
                 if (info.facing == CameraInfo.CAMERA_FACING_FRONT &&
                         info.orientation != 90) {
                     rotation = (info.orientation - mOrientation + 360) % 360;
-                } else */ {  // back-facing camera (or acting like it)
-                    rotation = (mOrientation) % 360;
+                } else {  // back-facing camera (or acting like it)
+                    rotation = (info.orientation + mOrientation) % 360;
                 }
             }
             mParameters.setRotation(rotation);
@@ -940,16 +939,15 @@ public class Camera extends BaseCamera implements View.OnClickListener,
         mSurfaceView = (SurfaceView) findViewById(R.id.camera_preview);
         mRecordingTimeView = (TextView) findViewById(R.id.recording_time);
         mPreferences = new ComboPreferences(this);
-        //mPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         CameraSettings.upgradeGlobalPreferences(mPreferences.getGlobal());
-        mCameraId = 0;//CameraSettings.readPreferredCameraId(mPreferences);
+        mCameraId = CameraSettings.readPreferredCameraId(mPreferences);
         mPreferences.setLocalId(this, mCameraId);
         CameraSettings.upgradeLocalPreferences(mPreferences.getLocal());
 
         mShutterdownTime = 0;
         mShutterupTime = 0;
 
-        //mNumberOfCameras = CameraHolder.instance().getNumberOfCameras();
+        mNumberOfCameras = CameraHolder.instance().getNumberOfCameras();
 
         // we need to reset exposure for the preview
         resetExposureCompensation();
@@ -1050,9 +1048,10 @@ public class Camera extends BaseCamera implements View.OnClickListener,
     }
 
     private void initializeHeadUpDisplay() {
-        CameraSettings settings = new CameraSettings(this, mInitialParams);
+        CameraSettings settings = new CameraSettings(this, mInitialParams,
+                CameraHolder.instance().getCameraInfo(), mCameraId);
 
-        boolean zoomSupported = true;//CameraSettings.isZoomSupported(this, mCameraId);
+        boolean zoomSupported = CameraSettings.isZoomSupported(this, mCameraId);
         ((CameraHeadUpDisplay)mHeadUpDisplay).initialize(this,
                 settings.getPreferenceGroup(R.xml.camera_preferences),
                 zoomSupported ? getZoomRatios() : null,
@@ -1830,7 +1829,7 @@ public class Camera extends BaseCamera implements View.OnClickListener,
 
     private void ensureCameraDevice() throws CameraHardwareException {
         if (mCameraDevice == null) {
-            mCameraDevice = CameraHolder.instance().open();
+            mCameraDevice = CameraHolder.instance().open(mCameraId);
             mInitialParams = mCameraDevice.getParameters();
         }
     }
@@ -1889,7 +1888,7 @@ public class Camera extends BaseCamera implements View.OnClickListener,
         if (mPreviewing) stopPreview();
 
         setPreviewDisplay(mSurfaceHolder);
-        //Util.setCameraDisplayOrientation(this, mCameraId, mCameraDevice);
+        Util.setCameraDisplayOrientation(this, mCameraId, mCameraDevice);
         setCameraParameters(UPDATE_PARAM_ALL);
 
         CameraSettings.setVideoMode(mParameters, false);
@@ -1898,7 +1897,7 @@ public class Camera extends BaseCamera implements View.OnClickListener,
         mCameraDevice.setErrorCallback(mErrorCallback);
 
         try {
-            Log.v(TAG, "startPreview");
+            Log.v(TAG, "startPreview yyy");
             mCameraDevice.startPreview();
         } catch (Throwable ex) {
             closeCamera();
@@ -2051,7 +2050,7 @@ public class Camera extends BaseCamera implements View.OnClickListener,
         String jpegQuality = mPreferences.getString(
                 CameraSettings.KEY_JPEG_QUALITY,
                 getString(R.string.pref_camera_jpegquality_default));
-        mParameters.setJpegQuality(JpegEncodingQualityMappings.getQualityNumber(jpegQuality));
+        mParameters.setJpegQuality(JpegEncodingQualityMappings.getQualityNumber(mCameraId, jpegQuality));
 
 
 
@@ -2388,12 +2387,23 @@ public class Camera extends BaseCamera implements View.OnClickListener,
         mCameraSettings.setIcon(android.R.drawable.ic_menu_preferences);
         mGalleryItems.add(mCameraSettings);
 
+        if (mNumberOfCameras > 1) {
+            menu.add(Menu.NONE, Menu.NONE,
+                    MenuHelper.POSITION_SWITCH_CAMERA_ID,
+                    R.string.switch_camera_id)
+                    .setOnMenuItemClickListener(new OnMenuItemClickListener() {
+                public boolean onMenuItemClick(MenuItem item) {
+                    switchCameraId((mCameraId + 1) % mNumberOfCameras);
+                    return true;
+                }
+            }).setIcon(android.R.drawable.ic_menu_camera);
+        }
     }
 
     private void switchCameraId(int cameraId) {
         if (mPausing || !isCameraIdle()) return;
-        //mCameraId = cameraId;
-        //CameraSettings.writePreferredCameraId(mPreferences, cameraId);
+        mCameraId = cameraId;
+        CameraSettings.writePreferredCameraId(mPreferences, cameraId);
 
         stopPreview();
         closeCamera();
@@ -2406,7 +2416,7 @@ public class Camera extends BaseCamera implements View.OnClickListener,
         mZoomValue = 0;
 
         // Reload the preferences.
-        mPreferences.setLocalId(this, 0);//mCameraId);
+        mPreferences.setLocalId(this, mCameraId);
         CameraSettings.upgradeLocalPreferences(mPreferences.getLocal());
 
         // Restart the preview.
@@ -2454,8 +2464,12 @@ public class Camera extends BaseCamera implements View.OnClickListener,
                 stopReceivingLocationUpdates();
             }
         }
-
-        setCameraParametersWhenIdle(UPDATE_PARAM_PREFERENCE);
+        int cameraId = CameraSettings.readPreferredCameraId(mPreferences);
+        if (mCameraId != cameraId) {
+            switchCameraId(cameraId);
+        } else {
+            setCameraParametersWhenIdle(UPDATE_PARAM_PREFERENCE);
+        }
     }
 
     @Override
@@ -2521,12 +2535,12 @@ class JpegEncodingQualityMappings {
 
     // Retrieve and return the Jpeg encoding quality number
     // for the given quality level.
-    public static int getQualityNumber(String jpegQuality) {
+    public static int getQualityNumber(int mCameraId, String jpegQuality) {
         Integer quality = mHashMap.get(jpegQuality);
         if (quality == null) {
             Log.w(TAG, "Unknown Jpeg quality: " + jpegQuality);
             return DEFAULT_QUALITY;
         }
-        return CameraProfile.getJpegEncodingQualityParameter(quality.intValue());
+        return CameraProfile.getJpegEncodingQualityParameter(mCameraId, quality.intValue());
     }
 }

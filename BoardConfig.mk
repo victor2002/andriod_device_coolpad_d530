@@ -101,8 +101,10 @@ COMMON_GLOBAL_CFLAGS += -DOMAP_ENHANCEMENT
 #USE_CAMERA_STUB := true
 #BOARD_CAMERA_LIBRARIES := libcamera
 #TARGET_PROVIDES_LIBCAMERA := true
-BOARD_USE_FROYO_LIBCAMERA := true
+#BOARD_USE_FROYO_LIBCAMERA := true
+BUILD_LIBCAMERA := true
 BOARD_CAMERA_LIBRARIES := libcamera
+#now use 5832 lib
 TARGET_PROVIDES_LIBCAMERA := false
 
 #dsp
@@ -135,3 +137,4 @@ TARGET_USE_CUSTOM_LUN_FILE_PATH := /sys/devices/platform/musb_hdrc/gadget/lun
 #BOARD_UMS_LUNFILE := "/sys/devices/platform/musb_hdrc/gadget/lun2/file"
 
 WITH_DEXPREOPT := true
+

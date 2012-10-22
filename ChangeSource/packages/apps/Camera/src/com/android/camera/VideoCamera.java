@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.android.camera;
 
 import com.android.camera.gallery.IImage;
@@ -36,7 +35,7 @@ import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
-//import android.hardware.Camera.CameraInfo;
+import android.hardware.Camera.CameraInfo;
 import android.hardware.Camera.Parameters;
 import android.hardware.Camera.Size;
 import android.media.CamcorderProfile;
@@ -82,6 +81,9 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
+import android.graphics.ImageFormat;
+
 
 /**
  * The Camcorder activity.
@@ -184,7 +186,7 @@ public class VideoCamera extends BaseCamera
     private final Handler mHandler = new MainHandler();
 
     // multiple cameras support
-    //private int mNumberOfCameras;
+    private int mNumberOfCameras;
     private int mCameraId;
 
     private MyOrientationEventListener mOrientationListener;
@@ -304,11 +306,11 @@ public class VideoCamera extends BaseCamera
 
         mPreferences = new ComboPreferences(this);
         CameraSettings.upgradeGlobalPreferences(mPreferences.getGlobal());
-        mCameraId = 0;//CameraSettings.readPreferredCameraId(mPreferences);
+        mCameraId = CameraSettings.readPreferredCameraId(mPreferences);
         mPreferences.setLocalId(this, mCameraId);
         CameraSettings.upgradeLocalPreferences(mPreferences.getLocal());
 
-        //mNumberOfCameras = CameraHolder.instance().getNumberOfCameras();
+        mNumberOfCameras = CameraHolder.instance().getNumberOfCameras();
 
         readVideoPreferences();
 
@@ -430,7 +432,8 @@ public class VideoCamera extends BaseCamera
     }
 
     private void initializeHeadUpDisplay() {
-        CameraSettings settings = new CameraSettings(this, mParameters);
+        CameraSettings settings = new CameraSettings(this, mParameters,
+                CameraHolder.instance().getCameraInfo(), mCameraId);
 
         PreferenceGroup group =
                 settings.getPreferenceGroup(R.xml.video_preferences);
@@ -438,7 +441,7 @@ public class VideoCamera extends BaseCamera
             group = filterPreferenceScreenByIntent(group);
         }
 
-        mZoomSupported = false;//CameraSettings.isVideoZoomSupported(this, mCameraId, mParameters);
+        mZoomSupported = CameraSettings.isVideoZoomSupported(this, mCameraId, mParameters);
         mHeadUpDisplay.initialize(this, group,
                 mZoomSupported ? getZoomRatios() : null,
                 mOrientationCompensation, mParameters);
@@ -632,7 +635,7 @@ public class VideoCamera extends BaseCamera
     private void readVideoPreferences() {
         String quality = mPreferences.getString(
                 CameraSettings.KEY_VIDEO_QUALITY,
-                CameraSettings.DEFAULT_VIDEO_QUALITY_VALUE);
+                CameraSettings.getDefaultVideoQuality(mCameraId));
 
         int videoQuality = CameraSettings.getVideoQuality(quality);
 
@@ -647,16 +650,19 @@ public class VideoCamera extends BaseCamera
         }
 
         // Double-check to make sure this camera is HD-capable
-        /*if (videoQuality == CamcorderProfile.QUALITY_HD &&
+        if (videoQuality == CamcorderProfile.QUALITY_HD &&
                 !CameraSettings.isHDCapable(mCameraId)) {
             videoQuality = CamcorderProfile.QUALITY_HIGH;
-        }*/
+        }
 
         if (videoQuality == CamcorderProfile.QUALITY_WIDE &&
                 !getResources().getBoolean(R.bool.supportsWideProfile)) {
             videoQuality = CamcorderProfile.QUALITY_HIGH;
         }
 
+        Log.e(TAG, "videoQuality=" + videoQuality);
+        videoQuality = CamcorderProfile.QUALITY_HIGH;
+        Log.e(TAG, "videoQuality=" + videoQuality);
         // Set video duration limit. The limit is read from the preference,
         // unless it is specified in the intent.
         if (intent.hasExtra(MediaStore.EXTRA_DURATION_LIMIT)) {
@@ -668,12 +674,12 @@ public class VideoCamera extends BaseCamera
                     CameraSettings.getVidoeDurationInMillis(quality);
         }
         try {
-            mProfile = CamcorderProfile.get(videoQuality);
+            mProfile = CamcorderProfile.get(mCameraId, videoQuality);
         }
         catch (RuntimeException e) {
             Log.e(TAG, "Unable to get video profile " + videoQuality, e);
             // Fall back to lowest quality if media profile is wrong
-            mProfile = CamcorderProfile.get(CamcorderProfile.QUALITY_LOW);
+            mProfile = CamcorderProfile.get(mCameraId, CamcorderProfile.QUALITY_LOW);
         }
     }
 
@@ -739,11 +745,11 @@ public class VideoCamera extends BaseCamera
     }
 
     private void startPreview() throws CameraHardwareException {
-        Log.v(TAG, "startPreview");
+        Log.v(TAG, "startPreview xxx");
         if (mCameraDevice == null) {
             // If the activity is paused and resumed, camera device has been
             // released and we need to open the camera.
-            mCameraDevice = CameraHolder.instance().open();
+            mCameraDevice = CameraHolder.instance().open(mCameraId);
         }
 
         if (mPreviewing == true) {
@@ -752,9 +758,10 @@ public class VideoCamera extends BaseCamera
         }
         setPreviewDisplay(mSurfaceHolder);
         Util.setCameraDisplayOrientation(this, mCameraId, mCameraDevice);
+        Log.v(TAG, "before set parameters"); //joy
         setCameraParameters();
 
-        //CameraSettings.setContinuousAf(mParameters, false);
+        CameraSettings.setContinuousAf(mParameters, false);
         // Enable higher framerate recording on some tegra 2 devices
         CameraSettings.enableHighFrameRateFHD(mParameters);
         CameraSettings.setVideoMode(mParameters, true);
@@ -1114,11 +1121,11 @@ public class VideoCamera extends BaseCamera
         // documentation.
         int rotation = 0;
         if (mOrientation != OrientationEventListener.ORIENTATION_UNKNOWN) {
-            /*CameraInfo info = CameraHolder.instance().getCameraInfo()[mCameraId];
+            CameraInfo info = CameraHolder.instance().getCameraInfo()[mCameraId];
             if (info.facing == CameraInfo.CAMERA_FACING_FRONT) {
                 rotation = (info.orientation - mOrientation + 360) % 360;
-            } else */ {  // back-facing camera
-                rotation = (mOrientation) % 360;
+            } else {  // back-facing camera
+                rotation = (info.orientation + mOrientation) % 360;
             }
         }
         mMediaRecorder.setOrientationHint(rotation);
@@ -1231,8 +1238,49 @@ public class VideoCamera extends BaseCamera
         gallery.setIcon(android.R.drawable.ic_menu_gallery);
         mGalleryItems.add(gallery);
 
+        if (mNumberOfCameras > 1) {
+            menu.add(Menu.NONE, Menu.NONE,
+                    MenuHelper.POSITION_SWITCH_CAMERA_ID,
+                    R.string.switch_camera_id)
+                    .setOnMenuItemClickListener(new OnMenuItemClickListener() {
+                public boolean onMenuItemClick(MenuItem item) {
+                    switchCameraId((mCameraId + 1) % mNumberOfCameras);
+                    return true;
+                }
+            }).setIcon(android.R.drawable.ic_menu_camera);
+        }
     }
 
+    private void switchCameraId(int cameraId) {
+        if (mPausing) return;
+        mCameraId = cameraId;
+        CameraSettings.writePreferredCameraId(mPreferences, cameraId);
+
+        // This is similar to what mShutterButton.performClick() does,
+        // but not quite the same.
+        if (mMediaRecorderRecording) {
+            if (mIsVideoCaptureIntent) {
+                stopVideoRecording();
+                showAlert();
+            } else {
+                stopVideoRecordingAndGetThumbnail();
+            }
+        } else {
+            stopVideoRecording();
+        }
+        closeCamera();
+
+        // Reload the preferences.
+        mPreferences.setLocalId(this, mCameraId);
+        CameraSettings.upgradeLocalPreferences(mPreferences.getLocal());
+        // Read media profile again because camera id is changed.
+        readVideoPreferences();
+        resizeForPreviewAspectRatio();
+        restartPreview();
+
+        // Reload the UI.
+        initializeHeadUpDisplay();
+    }
 
     private PreferenceGroup filterPreferenceScreenByIntent(
             PreferenceGroup screen) {
@@ -1295,7 +1343,7 @@ public class VideoCamera extends BaseCamera
         if (CameraSettings.isCamcoderFocusAtStart()) {
             mCameraDevice.autoFocus(null);
         }
-        //CameraSettings.setContinuousAf(mParameters, true);
+        CameraSettings.setContinuousAf(mParameters, true);
         setCameraHardwareParameters();
 
         initializeRecorder();
@@ -1357,10 +1405,10 @@ public class VideoCamera extends BaseCamera
                     mCurrentVideoFilename, Video.Thumbnails.MINI_KIND);
             // MetadataRetriever already rotates the thumbnail. We should rotate
             // it back (and mirror if it is front-facing camera).
-            //CameraInfo[] info = CameraHolder.instance().getCameraInfo();
-            /*if (info[mCameraId].facing == CameraInfo.CAMERA_FACING_BACK) {
+            CameraInfo[] info = CameraHolder.instance().getCameraInfo();
+            if (info[mCameraId].facing == CameraInfo.CAMERA_FACING_BACK) {
                 src = Util.rotateAndMirror(src, -mOrientationHint, false);
-            } else*/ {
+            } else {
                 src = Util.rotateAndMirror(src, -mOrientationHint, true);
             }
             mVideoFrame.setImageBitmap(src);
@@ -1569,8 +1617,16 @@ public class VideoCamera extends BaseCamera
         if (mMediaRecorder == null) {
             mParameters = mCameraDevice.getParameters();
         }
+        
+        mProfile.videoFrameWidth = 640;//joy
+        mProfile.videoFrameHeight = 480;//joy
+        Log.v(TAG, " preview format YUY2");
+        mParameters.setPreviewFormat(ImageFormat.YUY2); //joy
         mParameters.setPreviewSize(mProfile.videoFrameWidth, mProfile.videoFrameHeight);
         mParameters.setPreviewFrameRate(mProfile.videoFrameRate);
+        Log.v(TAG, " pic size 640x480");
+        mParameters.setPictureSize(640, 480);
+
 
         // Set flash mode.
         String flashMode = mPreferences.getString(
@@ -1701,7 +1757,12 @@ public class VideoCamera extends BaseCamera
             if (mCameraDevice == null) return;
 
             // Check if camera id is changed.
+            int cameraId = CameraSettings.readPreferredCameraId(mPreferences);
+            if (mCameraId != cameraId) {
+                switchCameraId(cameraId);
+            } else {
                 resetCameraParameters();
+            }
         }
     }
 

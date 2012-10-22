@@ -29,6 +29,28 @@
 PRODUCT_COPY_FILES += vendor/coolpad/D530/proprietary/libcamera.so:obj/lib/libcamera.so 
 PRODUCT_COPY_FILES +=     vendor/coolpad/D530/proprietary/libcamera.so:/system/lib/libcamera.so  
 
+#for camera video rec and player work
+PRODUCT_COPY_FILES += vendor/coolpad/D530/proprietary/libstagefright.so:obj/lib/libstagefright.so 
+PRODUCT_COPY_FILES += vendor/coolpad/D530/proprietary/libstagefright.so:/system/lib/libstagefright.so  
+
+PRODUCT_COPY_FILES += vendor/coolpad/D530/proprietary/libstagefright_amrnb_common.so:obj/lib/libstagefright_amrnb_common.so 
+PRODUCT_COPY_FILES += vendor/coolpad/D530/proprietary/libstagefright_amrnb_common.so:/system/lib/libstagefright_amrnb_common.so  
+
+PRODUCT_COPY_FILES += vendor/coolpad/D530/proprietary/libstagefright_avc_common.so:obj/lib/libstagefright_avc_common.so 
+PRODUCT_COPY_FILES += vendor/coolpad/D530/proprietary/libstagefright_avc_common.so:/system/lib/libstagefright_avc_common.so  
+
+PRODUCT_COPY_FILES += vendor/coolpad/D530/proprietary/libstagefright_color_conversion.so:obj/lib/libstagefright_color_conversion.so 
+PRODUCT_COPY_FILES += vendor/coolpad/D530/proprietary/libstagefright_color_conversion.so:/system/lib/libstagefright_color_conversion.so  
+
+PRODUCT_COPY_FILES += vendor/coolpad/D530/proprietary/libstagefright_enc_common.so:obj/lib/libstagefright_enc_common.so 
+PRODUCT_COPY_FILES += vendor/coolpad/D530/proprietary/libstagefright_enc_common.so:/system/lib/libstagefright_enc_common.so  
+
+#for blue tooth
+PRODUCT_COPY_FILES += vendor/coolpad/D530/proprietary/etc/firmware/TIInit_7.2.31.bts:/system/etc/firmware/TIInit_7.2.31.bts
+PRODUCT_COPY_FILES += vendor/coolpad/D530/proprietary/bin/uim-rfkill:/system/bin/uim-rfkill
+PRODUCT_COPY_FILES += vendor/coolpad/D530/proprietary/xbin/uim:/system/xbin/uim
+
+
 #for MP3 work
 PRODUCT_COPY_FILES += vendor/coolpad/D530/proprietary/libbridge.so:/system/lib/libbridge.so
 PRODUCT_COPY_FILES += vendor/coolpad/D530/proprietary/libLCML.so:/system/lib/libLCML.so

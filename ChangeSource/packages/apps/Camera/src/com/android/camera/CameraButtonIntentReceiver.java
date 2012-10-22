@@ -37,8 +37,8 @@ public class CameraButtonIntentReceiver extends BroadcastReceiver {
         // Try to get the camera hardware
         CameraHolder holder = CameraHolder.instance();
         ComboPreferences pref = new ComboPreferences(context);
-        int cameraId = 0;//CameraSettings.readPreferredCameraId(pref);
-        if (holder.tryOpen() == null) return;
+        int cameraId = CameraSettings.readPreferredCameraId(pref);
+        if (holder.tryOpen(cameraId) == null) return;
 
         // We are going to launch the camera, so hold the camera for later use
         holder.keep();

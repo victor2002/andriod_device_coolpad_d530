@@ -20,7 +20,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
-//import android.hardware.Camera.CameraInfo;
+import android.hardware.Camera.CameraInfo;
 import android.hardware.Camera.Parameters;
 import android.hardware.Camera.Size;
 import android.media.CamcorderProfile;
@@ -80,7 +80,6 @@ public class CameraSettings {
     private static final int YOUTUBE_VIDEO_DURATION = 15 * 60; // 15 mins
     private static final int DEFAULT_VIDEO_DURATION = 30 * 60; // 30 mins
 
-    public static final String DEFAULT_VIDEO_QUALITY_VALUE = "high";
     // MMS video length
     public static final int DEFAULT_VIDEO_DURATION_VALUE = 30;
 
@@ -88,7 +87,7 @@ public class CameraSettings {
 
     private final Context mContext;
     private final Parameters mParameters;
-    //private final CameraInfo[] mCameraInfo;
+    private final CameraInfo[] mCameraInfo;
     private final int mCameraId;
 
     private static String sTouchFocusParameter;
@@ -98,21 +97,22 @@ public class CameraSettings {
     private static boolean mSupportsNvHFR;
 
     // Samsung camera unadvertised modes
-    //private static boolean mSamsungCamMode; // camcorder mode
-    //private static boolean mSamsungContinuousAf;
-    //private static boolean mSamsungSpecialSettings; // slow_ae and video_recording_gamma
-    //private static boolean mIsOMAP4Camera;
+    private static boolean mSamsungCamMode; // camcorder mode
+    private static boolean mSamsungContinuousAf;
+    private static boolean mSamsungSpecialSettings; // slow_ae and video_recording_gamma
+    private static boolean mIsOMAP4Camera;
 
     private static boolean sFocusCamcorderAtStart = true;
 
     public static final String FOCUS_MODE_TOUCH = "touch";
 
-    public CameraSettings(Activity activity, Parameters parameters) {
+    public CameraSettings(Activity activity, Parameters parameters,
+                          CameraInfo[] cameraInfo, int cameraId) {
         mContext = activity;
         mParameters = parameters;
-        //mCameraInfo = cameraInfo;
-        mCameraId = 0;//cameraId;
-        //mIsOMAP4Camera = mContext.getResources().getBoolean(R.bool.isOMAP4Camera);
+        mCameraInfo = cameraInfo;
+        mCameraId = cameraId;
+        mIsOMAP4Camera = mContext.getResources().getBoolean(R.bool.isOMAP4Camera);
         sFocusCamcorderAtStart = mContext.getResources().getBoolean(
                 R.bool.focusCamcorderAtStart);
     }
@@ -198,20 +198,51 @@ public class CameraSettings {
                     break;
                 }
             }
+            if (!isHDCapable(mCameraId)) {
+                List<String> supported = new ArrayList<String>();
+                for (CharSequence value : values) {
+                    if (!VIDEO_QUALITY_HD.equals(value) &&
+                            !VIDEO_QUALITY_YOUTUBE_HD.equals(value)) {
+                        supported.add(value.toString());
+                    }
+                }
+                filterUnsupportedOptions(group, videoQuality, supported);
+            }
+            if (!mContext.getResources().getBoolean(R.bool.supportsWideProfile)) {
+                List<String> supported = new ArrayList<String>();
+                for (CharSequence value : values) {
+                    if (!VIDEO_QUALITY_WIDE.equals(value)) {
+                        supported.add(value.toString());
+                    }
+                }
+                filterUnsupportedOptions(group, videoQuality, supported);
+            }
         }
 
         // Filter out unsupported settings / options
         if (pictureSize != null) {
-            filterUnsupportedOptions(group, pictureSize, sizeListToStringList(
-                    mParameters.getSupportedPictureSizes()));
+            final List<String> pictureSizes = sizeListToStringList(mParameters.getSupportedPictureSizes());
+            final String filteredSizes = mContext.getResources().getString(R.string.filtered_pictureSizes);
+            if (filteredSizes != null && filteredSizes.length() > 0) {
+                pictureSizes.removeAll(Arrays.asList(filteredSizes.split(",")));
+            }
+            filterUnsupportedOptions(group, pictureSize, pictureSizes);
         }
         if (whiteBalance != null) {
             filterUnsupportedOptions(group,
                     whiteBalance, mParameters.getSupportedWhiteBalance());
         }
         if (colorEffect != null) {
+            if (isFrontFacingCamera()) {
+                String supportedEffects = mContext.getResources().getString(R.string.ffc_supportedEffects);
+                if (supportedEffects != null && supportedEffects.length() > 0) {
+                    filterUnsupportedOptions(group, colorEffect,
+                            Arrays.asList(supportedEffects.split(",")));
+                }
+            } else {
                 filterUnsupportedOptions(group,
                         colorEffect, mParameters.getSupportedColorEffects());
+            }
         }
         if (sceneMode != null) {
             filterUnsupportedOptions(group,
@@ -221,18 +252,41 @@ public class CameraSettings {
             filterUnsupportedOptions(group,
                     flashMode, mParameters.getSupportedFlashModes());
         }
+
         if (focusMode != null) {
-            filterUnsupportedOptions(group, focusMode, mParameters.getSupportedFocusModes());
+            if (isFrontFacingCamera() && !mContext.getResources().getBoolean(R.bool.ffc_canFocus)) {
+                filterUnsupportedOptions(group, focusMode, new ArrayList<String>());
+            } else {
+                List<String> focusModes = mParameters.getSupportedFocusModes();
+                if (checkTouchFocus()) {
+                    focusModes.add(FOCUS_MODE_TOUCH);
+                }
+                filterUnsupportedOptions(group, focusMode, focusModes);
+            }
         }
+
         if (videoFlashMode != null) {
             filterUnsupportedOptions(group,
                     videoFlashMode, mParameters.getSupportedFlashModes());
         }
+        if (exposure != null) buildExposureCompensation(group, exposure);
         if (cameraId != null) buildCameraId(group, cameraId);
-
-        if (exposure != null) {
-            buildExposureCompensation(group, exposure);
+        if (iso != null) {
+            filterUnsupportedOptions(group,
+                    iso, mParameters.getSupportedIsoValues());
         }
+        if (lensShade!= null) {
+            filterUnsupportedOptions(group,
+                    lensShade, mParameters.getSupportedLensShadeModes());
+        }
+         if (antiBanding != null) {
+             filterUnsupportedOptions(group,
+                     antiBanding, mParameters.getSupportedAntibanding());
+         }
+         if (autoExposure != null) {
+             filterUnsupportedOptions(group,
+                     autoExposure, mParameters.getSupportedAutoexposure());
+         }
     }
 
     private boolean checkTouchFocus() {
@@ -281,7 +335,7 @@ public class CameraSettings {
 
     private void buildCameraId(
             PreferenceGroup group, IconListPreference cameraId) {
-        int numOfCameras = 0;//mCameraInfo.length;
+        int numOfCameras = mCameraInfo.length;
         if (numOfCameras < 2) {
             removePreference(group, cameraId.getKey());
             return;
@@ -293,7 +347,7 @@ public class CameraSettings {
         int[] largeIconIds = new int[numOfCameras];
         for (int i = 0; i < numOfCameras; i++) {
             entryValues[i] = Integer.toString(i);
-            /*if (mCameraInfo[i].facing == CameraInfo.CAMERA_FACING_FRONT) {
+            if (mCameraInfo[i].facing == CameraInfo.CAMERA_FACING_FRONT) {
                 entries[i] = mContext.getString(
                         R.string.pref_camera_id_entry_front);
                 iconIds[i] = R.drawable.ic_menuselect_camera_facing_front;
@@ -303,7 +357,7 @@ public class CameraSettings {
                         R.string.pref_camera_id_entry_dual);
                 iconIds[i] = R.drawable.ic_menuselect_camera_facing_back;
                 largeIconIds[i] = R.drawable.ic_viewfinder_camera_facing_back;
-            } else */{
+            } else {
                 entries[i] = mContext.getString(
                         R.string.pref_camera_id_entry_back);
                 iconIds[i] = R.drawable.ic_menuselect_camera_facing_back;
@@ -316,9 +370,9 @@ public class CameraSettings {
         cameraId.setLargeIconIds(largeIconIds);
 
         mSupportsNvHFR = mContext.getResources().getBoolean(R.bool.supportsNvHighBitrateFullHD);
-        //mSamsungCamMode = mContext.getResources().getBoolean(R.bool.needsSamsungCamMode);
-        //mSamsungContinuousAf = mContext.getResources().getBoolean(R.bool.needsSamsungContinuousAf);
-        //mSamsungSpecialSettings = mContext.getResources().getBoolean(R.bool.needsSamsungSpecialSettings);
+        mSamsungCamMode = mContext.getResources().getBoolean(R.bool.needsSamsungCamMode);
+        mSamsungContinuousAf = mContext.getResources().getBoolean(R.bool.needsSamsungContinuousAf);
+        mSamsungSpecialSettings = mContext.getResources().getBoolean(R.bool.needsSamsungSpecialSettings);
     }
 
     private static boolean removePreference(PreferenceGroup group, String key) {
@@ -432,14 +486,14 @@ public class CameraSettings {
         upgradeLocalPreferences(pref.getLocal());
     }
 
-    public static final String getDefaultVideoQuality() {
-        return isHDCapable() ? VIDEO_QUALITY_HD : VIDEO_QUALITY_HIGH;
+    public static final String getDefaultVideoQuality(int cameraId) {
+        return isHDCapable(cameraId) ? VIDEO_QUALITY_HD : VIDEO_QUALITY_HIGH;
     }
 
-    public static final boolean isHDCapable() {
+    public static final boolean isHDCapable(int cameraId) {
         boolean ret = false;
         try {
-            ret = CamcorderProfile.get(0, CamcorderProfile.QUALITY_HD) != null;
+            ret = CamcorderProfile.get(cameraId, CamcorderProfile.QUALITY_HD) != null;
         } catch (Exception e) {
             // Native code throws exception if not found
         }
@@ -477,14 +531,13 @@ public class CameraSettings {
     public static void writePreferredCameraId(SharedPreferences pref,
             int cameraId) {
         Editor editor = pref.edit();
-        editor.putString(KEY_CAMERA_ID, Integer.toString(0));
+        editor.putString(KEY_CAMERA_ID, Integer.toString(cameraId));
         editor.apply();
     }
 
     public static boolean isZoomSupported(Context context, int cameraId) {
-        return false; 
-		//CameraHolder.instance().getCameraInfo()[cameraId].facing != CameraInfo.CAMERA_FACING_FRONT
-        //        || context.getResources().getBoolean(R.bool.ffc_canZoom);
+        return CameraHolder.instance().getCameraInfo()[cameraId].facing != CameraInfo.CAMERA_FACING_FRONT
+                || context.getResources().getBoolean(R.bool.ffc_canZoom);
     }
 
     public static void dumpParameters(Parameters params) {
@@ -494,11 +547,11 @@ public class CameraSettings {
     }
 
     private boolean isFrontFacingCamera() {
-        return false;//mCameraInfo[mCameraId].facing == CameraInfo.CAMERA_FACING_FRONT;
+        return mCameraInfo[mCameraId].facing == CameraInfo.CAMERA_FACING_FRONT;
     }
 
     public static boolean isVideoZoomSupported(Context context, int cameraId, Parameters params) {
-        boolean ret = isZoomSupported(context, 0);
+        boolean ret = isZoomSupported(context, cameraId);
         if (ret) {
             // No zoom at 720P currently. Driver limitation?
             Size size = params.getPreviewSize();
@@ -519,9 +572,14 @@ public class CameraSettings {
             params.set("cam-mode", on ? "1" : "0");
         } else if (params.get("nv-mode-hint") != null) {
             params.set("nv-mode-hint", on ? "video" : "still");
-        } 
+        } else if (mSamsungCamMode) {
+            params.set("cam_mode", on ? "1" : "0");
+        } else if (mIsOMAP4Camera) {
+            params.set("mode", on ? "video-mode" : "high-quality");
+            params.set("sei-encoding-type", "sei_enc_2010");
+        }
 
-        /*if (on && params.get("focus-mode-values").indexOf("continuous-video") != -1) {
+        if (on && params.get("focus-mode-values").indexOf("continuous-video") != -1) {
             // Galaxy S2
             params.set("focus-mode", "continuous-video");
         }
@@ -529,9 +587,9 @@ public class CameraSettings {
         if (on && params.get("focus-mode-values").indexOf("caf") != -1) {
             // OMAP4
             params.set("focus-mode", "caf");
-        }*/
+        }
 
-        /*if (mSamsungSpecialSettings) {
+        if (mSamsungSpecialSettings) {
             params.set("video_recording_gamma", on ? "on" : "off");
             params.set("slow_ae", on ? "on" : "off");
             params.set("iso", on ? "movie" : "auto");
@@ -540,7 +598,7 @@ public class CameraSettings {
             if (on) {
                 params.set("antibanding", "50hz");
             }
-        }*/
+        }
     }
 
     /**
@@ -549,13 +607,13 @@ public class CameraSettings {
      * @param params
      * @param on
      */
-    /*public static void setContinuousAf(Parameters params, boolean on) {
+    public static void setContinuousAf(Parameters params, boolean on) {
         if (params.get("enable-caf") != null) {
             params.set("enable-caf", on ? "on" : "off");
         } else if (mSamsungContinuousAf) {
             params.set("continuous_af", on ? 1 : 0);
         }
-    }*/
+    }
 
     /**
      * Changes nv-sensor-mode to enable higher framerate video recording 

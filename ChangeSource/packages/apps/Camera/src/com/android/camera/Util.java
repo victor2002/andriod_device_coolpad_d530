@@ -316,8 +316,8 @@ public class Util {
             int cameraId, Camera camera) {
         // See android.hardware.Camera.setCameraDisplayOrientation for
         // documentation.
-        //Camera.CameraInfo info = new Camera.CameraInfo();
-        //Camera.getCameraInfo(cameraId, info);
+        Camera.CameraInfo info = new Camera.CameraInfo();
+        Camera.getCameraInfo(cameraId, info);
         // We're always working in a landscape layout. We can ignore getDisplayRotation
         // figure which can provide incorrect rotation or provide rotation figure too
         // soon, such as when opening from the lockscreen which is portrait.
@@ -325,12 +325,12 @@ public class Util {
         // orientation.
         int degrees = 90;
         int result;
-        /*if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT &&
+        if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT &&
                 info.orientation != 90) {
             result = (info.orientation + degrees) % 360;
             result = (360 - result) % 360;  // compensate the mirror
-        } else */ {  // back-facing (or acting like it)
-            result = (360 - degrees) % 360;
+        } else {  // back-facing (or acting like it)
+            result = (info.orientation - degrees + 360) % 360;
         }
 
         // Ugly hack: Make sure the flip-mode is completely off
