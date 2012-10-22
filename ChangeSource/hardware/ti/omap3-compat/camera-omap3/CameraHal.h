@@ -92,10 +92,10 @@ extern "C" {
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
 
 #define VIDEO_DEVICE        "/dev/video5"
-#define MIN_WIDTH           320 //from log
-#define MIN_HEIGHT          240 //from log
-#define PICTURE_WIDTH   1280  //from log  //3264 /* 5mp - 2560. 8mp - 3280 */ /* Make sure it is a multiple of 16. */
-#define PICTURE_HEIGHT  960 //from log //2448 /* 5mp - 2048. 8mp - 2464 */ /* Make sure it is a multiple of 16. */
+#define MIN_WIDTH           128
+#define MIN_HEIGHT          96
+#define PICTURE_WIDTH   1280 /* 5mp - 2560. 8mp - 3280 */ /* Make sure it is a multiple of 16. */
+#define PICTURE_HEIGHT  960 /* 5mp - 2048. 8mp - 2464 */ /* Make sure it is a multiple of 16. */
 #define PREVIEW_WIDTH 176
 #define PREVIEW_HEIGHT 144
 #define CAPTURE_8MP_WIDTH        3280
@@ -311,7 +311,7 @@ public:
     virtual void        disableMsgType(int32_t msgType);
     virtual bool        msgTypeEnabled(int32_t msgType);
 /*--------------------Eclair HAL---------------------------------------*/
-    static sp<CameraHardwareInterface> createInstance();
+    static sp<CameraHardwareInterface> createInstance(int cameraId);
 
     virtual status_t sendCommand(int32_t cmd, int32_t arg1, int32_t arg2);
 
@@ -376,7 +376,7 @@ public:
         }
     };
 
-   CameraHal();
+   CameraHal(int cameraId);
     virtual ~CameraHal();
     void previewThread();
     bool validateSize(size_t width, size_t height, const supported_resolution *supRes, size_t count);
@@ -515,7 +515,7 @@ public:
     sp<MemoryBase> mVideoBuffer[VIDEO_FRAME_COUNT_MAX];
 
     //Index of current camera adapter
-    //int mCameraIndex;
+    int mCameraIndex;
     // ...
     int nOverlayBuffersQueued;
     int nCameraBuffersQueued;
@@ -525,7 +525,7 @@ public:
     sp<MemoryHeapBase> mPreviewHeaps[MAX_CAMERA_BUFFERS];
     sp<MemoryBase> mPreviewBuffers[MAX_CAMERA_BUFFERS];
     int mfirstTime;
-    static wp<CameraHardwareInterface> singleton;
+    static wp<CameraHardwareInterface> singleton[MAX_CAMERAS_SUPPORTED];
     static int camera_device;
     static const supported_resolution supportedPreviewRes[];
     static const supported_resolution supportedPictureRes[];

@@ -28,12 +28,12 @@ LOCAL_SRC_FILES += \
         ../../../../../external/skia/src/images/SkImageDecoder_libjpeg.cpp
 
 LOCAL_SHARED_LIBRARIES := \
+    libdl \
     libcutils \
     libskia \
     libstagefright \
     libbinder \
     libutils \
-	libdl \
     libjpeg
 
 LOCAL_C_INCLUDES := \

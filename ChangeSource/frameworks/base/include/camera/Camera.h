@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2008 The Android Open Source Project
  * Copyright (C) 2008 HTC Inc.
+ * Copyright (C) 2010, Code Aurora Forum. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -77,19 +78,52 @@ enum {
     CAMERA_MSG_POSTVIEW_FRAME   = 0x040,
     CAMERA_MSG_RAW_IMAGE        = 0x080,
     CAMERA_MSG_COMPRESSED_IMAGE = 0x100,
+
+#ifdef OMAP_ENHANCEMENT
+
+    CAMERA_MSG_BURST_IMAGE      = 0x200,
+
+#endif
+
+#ifdef CAF_CAMERA_GB_REL
+    CAMERA_MSG_STATS_DATA       = 0x200,
+    CAMERA_MSG_META_DATA        = 0x400,
+    CAMERA_MSG_ALL_MSGS         = 0x7FF
+#else
     CAMERA_MSG_ALL_MSGS         = 0x1FF
+#endif
+
 };
 
 // cmdType in sendCommand functions
 enum {
     CAMERA_CMD_START_SMOOTH_ZOOM     = 1,
     CAMERA_CMD_STOP_SMOOTH_ZOOM      = 2,
+    // Set the clockwise rotation of preview display (setPreviewDisplay) in
+    // degrees. This affects the preview frames and the picture displayed after
+    // snapshot. This method is useful for portrait mode applications. Note that
+    // preview display of front-facing cameras is flipped horizontally before
+    // the rotation, that is, the image is reflected along the central vertical
+    // axis of the camera sensor. So the users can see themselves as looking
+    // into a mirror.
+    //
+    // This does not affect the order of byte array of CAMERA_MSG_PREVIEW_FRAME,
+    // CAMERA_MSG_VIDEO_FRAME, CAMERA_MSG_POSTVIEW_FRAME, CAMERA_MSG_RAW_IMAGE,
+    // or CAMERA_MSG_COMPRESSED_IMAGE. This is not allowed to be set during
+    // preview.
     CAMERA_CMD_SET_DISPLAY_ORIENTATION = 3,
+    CAMERA_CMD_HISTOGRAM_ON     = 4,
+    CAMERA_CMD_HISTOGRAM_OFF     = 5,
+    CAMERA_CMD_HISTOGRAM_SEND_DATA  = 6,
+    CAMERA_CMD_FACE_DETECTION_ON     = 7,
+    CAMERA_CMD_FACE_DETECTION_OFF     = 8,
+    CAMERA_CMD_SEND_META_DATA  = 9,
 };
 
 // camera fatal errors
 enum {
     CAMERA_ERROR_UKNOWN  = 1,
+    CAMERA_ERROR_RESOURCE = 2,
     CAMERA_ERROR_SERVER_DIED = 100
 };
 
@@ -97,7 +131,6 @@ enum {
     CAMERA_FACING_BACK = 0, /* The facing of the camera is opposite to that of the screen. */
     CAMERA_FACING_FRONT = 1 /* The facing of the camera is the same as that of the screen. */
 };
-
 
 struct CameraInfo {
 
@@ -121,7 +154,6 @@ struct CameraInfo {
      */
     int orientation;
 };
-
 
 class ICameraService;
 class ICamera;
@@ -151,7 +183,7 @@ public:
     static  int32_t     getNumberOfCameras();
     static  status_t    getCameraInfo(int cameraId,
                                       struct CameraInfo* cameraInfo);
-    static  sp<Camera>  connect();
+    static  sp<Camera>  connect(int cameraId);
                         ~Camera();
             void        init();
 
@@ -165,6 +197,15 @@ public:
             // pass the buffered ISurface to the camera service
             status_t    setPreviewDisplay(const sp<Surface>& surface);
             status_t    setPreviewDisplay(const sp<ISurface>& surface);
+
+#ifdef USE_GETBUFFERINFO
+            // query the recording buffer information from HAL layer.
+            status_t    getBufferInfo(sp<IMemory>& Frame, size_t *alignedSize);
+#endif
+#ifdef CAF_CAMERA_GB_REL
+            //encode the YUV data
+            void        encodeData();
+#endif
 
             // start preview mode, must call setPreviewDisplay first
             status_t    startPreview();
@@ -199,8 +240,18 @@ public:
             // set preview/capture parameters - key/value pairs
             status_t    setParameters(const String8& params);
 
+            #ifdef MOTO_CUSTOM_PARAMETERS
+            // set preview/capture parameters - key/value pairs
+            status_t    setCustomParameters(const String8& params);
+            #endif
+
             // get preview/capture parameters - key/value pairs
             String8     getParameters() const;
+
+            #ifdef MOTO_CUSTOM_PARAMETERS
+            // get preview/capture parameters - key/value pairs
+            String8     getCustomParameters() const;
+            #endif
 
             // send command to camera driver
             status_t    sendCommand(int32_t cmd, int32_t arg1, int32_t arg2);

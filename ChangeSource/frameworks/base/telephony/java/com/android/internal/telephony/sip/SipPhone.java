@@ -938,6 +938,6 @@ public class SipPhone extends SipPhoneBase {
     }
     public boolean getIccState(int i)
     {
-        return false;
+        return true;
     }
 }

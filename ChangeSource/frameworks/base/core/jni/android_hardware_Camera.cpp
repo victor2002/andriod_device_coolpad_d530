@@ -300,7 +300,7 @@ void JNICameraContext::clearCallbackBuffers_l(JNIEnv *env)
 
 static jint android_hardware_Camera_getNumberOfCameras(JNIEnv *env, jobject thiz)
 {
-    return 1;//Camera::getNumberOfCameras();
+    return Camera::getNumberOfCameras();
 }
 
 static void android_hardware_Camera_getCameraInfo(JNIEnv *env, jobject thiz,
@@ -321,7 +321,7 @@ static void android_hardware_Camera_getCameraInfo(JNIEnv *env, jobject thiz,
 static void android_hardware_Camera_native_setup(JNIEnv *env, jobject thiz,
     jobject weak_this, jint cameraId)
 {
-    sp<Camera> camera = Camera::connect();//cameraId);
+    sp<Camera> camera = Camera::connect(cameraId);
 
     if (camera == NULL) {
         jniThrowException(env, "java/lang/RuntimeException",

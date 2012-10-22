@@ -17,7 +17,7 @@
 package android.media;
 
 import android.hardware.Camera;
-//import android.hardware.Camera.CameraInfo;
+import android.hardware.Camera.CameraInfo;
 
 /**
  * The CamcorderProfile class is used to retrieve the
@@ -132,15 +132,15 @@ public class CamcorderProfile
      * @param quality the target quality level for the camcorder profile
      */
     public static CamcorderProfile get(int quality) {
-        //int numberOfCameras = Camera.getNumberOfCameras();
-        //CameraInfo cameraInfo = new CameraInfo();
-        //for (int i = 0; i < numberOfCameras; i++) {
-        //    Camera.getCameraInfo(i, cameraInfo);
-        //    if (cameraInfo.facing == CameraInfo.CAMERA_FACING_BACK) {
-        //        return get(i, quality);
-        //    }
-        //}
-        return get(0, quality);
+        int numberOfCameras = Camera.getNumberOfCameras();
+        CameraInfo cameraInfo = new CameraInfo();
+        for (int i = 0; i < numberOfCameras; i++) {
+            Camera.getCameraInfo(i, cameraInfo);
+            if (cameraInfo.facing == CameraInfo.CAMERA_FACING_BACK) {
+                return get(i, quality);
+            }
+        }
+        return (numberOfCameras==1)?get(0, quality):null;
     }
 
     /**

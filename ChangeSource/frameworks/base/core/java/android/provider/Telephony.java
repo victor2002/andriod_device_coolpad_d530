@@ -595,10 +595,6 @@ public final class Telephony {
             public static final String SMS_CB_RECEIVED_ACTION =
                     "android.provider.Telephony.SMS_CB_RECEIVED";
 
-            @SdkConstant(SdkConstantType.BROADCAST_INTENT_ACTION)
-            public static final String SMS_ON_ICC_RECEIVED_ACTION =
-                    "android.provider.Telephony.SMS_ON_ICC_RECEIVED";
-
             /**
              * Broadcast Action: A new Emergency Broadcast message has been received
              * by the device. The intent will have the following extra

@@ -2,6 +2,7 @@
 **
 ** Copyright (C) 2008, The Android Open Source Project
 ** Copyright (C) 2008 HTC Inc.
+** Copyright (C) 2010, Code Aurora Forum. All rights reserved.
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -92,60 +93,47 @@ void Camera::init()
 
 Camera::~Camera()
 {
-    disconnect();
+    // We don't need to call disconnect() here because if the CameraService
+    // thinks we are the owner of the hardware, it will hold a (strong)
+    // reference to us, and we can't possibly be here. We also don't want to
+    // call disconnect() here if we are in the same process as mediaserver,
+    // because we may be invoked by CameraService::Client::connect() and will
+    // deadlock if we call any method of ICamera here.
 }
 
 int32_t Camera::getNumberOfCameras()
 {
-    return 1;//cs->getNumberOfCameras();
+    const sp<ICameraService>& cs = getCameraService();
+    if (cs == 0) return 0;
+    return cs->getNumberOfCameras();
 }
-
-#define FIRST_CAMERA_FACING CAMERA_FACING_BACK
-#define FIRST_CAMERA_ORIENTATION 90
-
-static const CameraInfo sCameraInfo[] = {
-    {
-        FIRST_CAMERA_FACING,
-        FIRST_CAMERA_ORIENTATION,  /* orientation */
-    },
-    {
-        CAMERA_FACING_FRONT,
-        270, /* orientation */
-    }
-};
-
 
 status_t Camera::getCameraInfo(int cameraId,
-                                      struct CameraInfo* cameraInfo) {
-    memcpy(cameraInfo, &sCameraInfo[0], sizeof(CameraInfo));
-    return OK;
+                               struct CameraInfo* cameraInfo) {
+    const sp<ICameraService>& cs = getCameraService();
+    if (cs == 0) return UNKNOWN_ERROR;
+    return cs->getCameraInfo(cameraId, cameraInfo);
 }
 
-
-
-
-sp<Camera> Camera::connect()
+sp<Camera> Camera::connect(int cameraId)
 {
     LOGV("connect");
-    LOGD("%d: %s() connect debug123 ", __LINE__, __FUNCTION__);
     sp<Camera> c = new Camera();
-    LOGD("%d: %s() connect debug123 ", __LINE__, __FUNCTION__);
     const sp<ICameraService>& cs = getCameraService();
-    LOGD("%d: %s() connect debug123 ", __LINE__, __FUNCTION__);
     if (cs != 0) {
-        LOGD("%d: %s() connect debug123 ", __LINE__, __FUNCTION__);
-        c->mCamera = cs->connect(c);
+        c->mCamera = cs->connect(c, cameraId);
     }
     if (c->mCamera != 0) {
-        LOGD("%d: %s() connect debug123 ", __LINE__, __FUNCTION__);
         c->mCamera->asBinder()->linkToDeath(c);
         c->mStatus = NO_ERROR;
     } else {
-        LOGD("%d: %s() connect debug123 ", __LINE__, __FUNCTION__);
         c.clear();
     }
-    LOGD("%d: %s() connect debug123 ", __LINE__, __FUNCTION__);
     return c;
+}
+
+extern "C" sp<Camera> _ZN7android6Camera7connectEv () {
+    return Camera::connect(0);
 }
 
 void Camera::disconnect()
@@ -210,6 +198,25 @@ status_t Camera::setPreviewDisplay(const sp<ISurface>& surface)
     return c->setPreviewDisplay(surface);
 }
 
+#ifdef USE_GETBUFFERINFO
+status_t Camera::getBufferInfo(sp<IMemory>& Frame, size_t *alignedSize)
+{
+    LOGV("getBufferInfo");
+    sp <ICamera> c = mCamera;
+    if (c == 0) return NO_INIT;
+    return c->getBufferInfo(Frame, alignedSize);
+}
+#endif
+
+#ifdef CAF_CAMERA_GB_REL
+void Camera::encodeData()
+{
+    LOGV("encodeData");
+    sp <ICamera> c = mCamera;
+    if (c == 0) return;
+    c->encodeData();
+}
+#endif
 
 // start preview mode
 status_t Camera::startPreview()
@@ -308,6 +315,18 @@ status_t Camera::setParameters(const String8& params)
     return c->setParameters(params);
 }
 
+
+#ifdef MOTO_CUSTOM_PARAMETERS
+// set preview/capture custom parameters - key/value pairs
+status_t Camera::setCustomParameters(const String8& params)
+{
+    LOGV("setCustomParameters");
+    sp <ICamera> c = mCamera;
+    if (c == 0) return NO_INIT;
+    return c->setCustomParameters(params);
+}
+#endif
+
 // get preview/capture parameters - key/value pairs
 String8 Camera::getParameters() const
 {
@@ -317,6 +336,18 @@ String8 Camera::getParameters() const
     if (c != 0) params = mCamera->getParameters();
     return params;
 }
+
+#ifdef MOTO_CUSTOM_PARAMETERS
+// get preview/capture parameters - key/value pairs
+String8 Camera::getCustomParameters() const
+{
+    LOGV("getCustomParameters");
+    String8 params;
+    sp <ICamera> c = mCamera;
+    if (c != 0) params = mCamera->getCustomParameters();
+    return params;
+}
+#endif
 
 // send command to camera driver
 status_t Camera::sendCommand(int32_t cmd, int32_t arg1, int32_t arg2)

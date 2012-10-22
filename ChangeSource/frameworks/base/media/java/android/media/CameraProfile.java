@@ -17,7 +17,7 @@
 package android.media;
 
 import android.hardware.Camera;
-//import android.hardware.Camera.CameraInfo;
+import android.hardware.Camera.CameraInfo;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -49,14 +49,31 @@ public class CameraProfile
     /**
      * Returns a pre-defined still image capture (jpeg) quality level
      * used for the given quality level in the Camera application for
-     * the specified camera.
+     * the first back-facing camera on the device. If the device has no
+     * back-facing camera, this returns 0.
      *
      * @param quality The target quality level
      */
     public static int getJpegEncodingQualityParameter(int quality) {
-                return getJpegEncodingQualityParameter(0, quality);
+        int numberOfCameras = Camera.getNumberOfCameras();
+        CameraInfo cameraInfo = new CameraInfo();
+        for (int i = 0; i < numberOfCameras; i++) {
+            Camera.getCameraInfo(i, cameraInfo);
+            if (cameraInfo.facing == CameraInfo.CAMERA_FACING_BACK) {
+                return getJpegEncodingQualityParameter(i, quality);
+            }
+        }
+        return 0;
     }
 
+    /**
+     * Returns a pre-defined still image capture (jpeg) quality level
+     * used for the given quality level in the Camera application for
+     * the specified camera.
+     *
+     * @param cameraId The id of the camera
+     * @param quality The target quality level
+     */
     public static int getJpegEncodingQualityParameter(int cameraId, int quality) {
         if (quality < QUALITY_LOW || quality > QUALITY_HIGH) {
             throw new IllegalArgumentException("Unsupported quality level: " + quality);
@@ -64,9 +81,9 @@ public class CameraProfile
         synchronized (sCache) {
             int[] levels = sCache.get(cameraId);
             if (levels == null) {
-            levels = getImageEncodingQualityLevels(cameraId);
+                levels = getImageEncodingQualityLevels(cameraId);
                 sCache.put(cameraId, levels);
-		    }
+            }
             return levels[quality];
         }
     }
