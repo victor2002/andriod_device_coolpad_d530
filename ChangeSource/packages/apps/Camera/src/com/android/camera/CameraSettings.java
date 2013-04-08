@@ -579,7 +579,7 @@ public class CameraSettings {
             params.set("sei-encoding-type", "sei_enc_2010");
         }
 
-        if (on && params.get("focus-mode-values").indexOf("continuous-video") != -1) {
+        /*if (on && params.get("focus-mode-values").indexOf("continuous-video") != -1) {
             // Galaxy S2
             params.set("focus-mode", "continuous-video");
         }
@@ -598,7 +598,7 @@ public class CameraSettings {
             if (on) {
                 params.set("antibanding", "50hz");
             }
-        }
+        }*/
     }
 
     /**

@@ -19,7 +19,7 @@ package com.android.mms.transaction;
 
 import static android.content.Intent.ACTION_BOOT_COMPLETED;
 import static android.provider.Telephony.Sms.Intents.SMS_RECEIVED_ACTION;
-import static android.provider.Telephony.Sms.Intents.SMS_ON_ICC_RECEIVED_ACTION;
+
 
 import java.util.TimeZone;
 import android.preference.PreferenceManager;

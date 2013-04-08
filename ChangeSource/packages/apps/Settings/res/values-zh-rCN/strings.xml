@@ -57,7 +57,7 @@
     <string name="sdcard_setting" product="default" msgid="5922637503871474866">"SD 卡"</string>
     <string name="battery_info_status_label" msgid="8109155295509700309">"电池状态："</string>
     <string name="battery_info_power_label" msgid="7465140230991349382">"是否已插电："</string>
-    <string name="battery_info_scale_label" msgid="3649763192389778437">"电池电量："</string>
+    <string name="battery_info_scale_label" msgid="3649763192389778437">"电池容量："</string>
     <string name="battery_info_level_label" msgid="8706526709307788737">"电池电量："</string>
     <string name="battery_info_health_label" msgid="6416051542741886958">"电池运行状况："</string>
     <string name="battery_info_technology_label" msgid="788304533220748681">"电池技术："</string>

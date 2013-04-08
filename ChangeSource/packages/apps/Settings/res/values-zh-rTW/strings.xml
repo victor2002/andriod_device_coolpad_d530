@@ -119,7 +119,7 @@
     <!-- Battery Info screen. Label for a status item.  Used for diagnostic info screens, precise translation isn't needed -->
     <string name="battery_info_power_label" msgid="7465140230991349382">"電源插頭："</string>
     <!-- Battery Info screen. Label for a status item.  Used for diagnostic info screens, precise translation isn't needed -->
-    <string name="battery_info_scale_label" msgid="3649763192389778437">"電池存量："</string>
+    <string name="battery_info_scale_label" msgid="3649763192389778437">"電池總量："</string>
     <!-- Battery Info screen. Label for a status item.  Used for diagnostic info screens, precise translation isn't needed -->
     <string name="battery_info_level_label" msgid="8706526709307788737">"電池存量："</string>
     <!-- Battery Info screen. Label for a status item.  Used for diagnostic info screens, precise translation isn't needed -->
