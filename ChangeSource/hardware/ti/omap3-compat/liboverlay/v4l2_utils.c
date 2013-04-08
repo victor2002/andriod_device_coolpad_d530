@@ -39,13 +39,13 @@
         do { LOGE(fmt, ##args); } \
         while (0)
 #endif
-#define V4L2_CID_PRIV_OFFSET            0x00530000
-#define V4L2_CID_PRIV_ROTATION      (V4L2_CID_PRIVATE_BASE \
-                        + V4L2_CID_PRIV_OFFSET + 0)
-#define V4L2_CID_PRIV_COLORKEY      (V4L2_CID_PRIVATE_BASE \
-                        + V4L2_CID_PRIV_OFFSET + 1)
-#define V4L2_CID_PRIV_COLORKEY_EN   (V4L2_CID_PRIVATE_BASE \
-                        + V4L2_CID_PRIV_OFFSET + 2)
+#define V4L2_CID_PRIV_OFFSET			0x00530000
+#define V4L2_CID_PRIV_ROTATION		(V4L2_CID_PRIVATE_BASE \
+						+ V4L2_CID_PRIV_OFFSET + 0)
+#define V4L2_CID_PRIV_COLORKEY		(V4L2_CID_PRIVATE_BASE \
+						+ V4L2_CID_PRIV_OFFSET + 1)
+#define V4L2_CID_PRIV_COLORKEY_EN	(V4L2_CID_PRIVATE_BASE \
+						+ V4L2_CID_PRIV_OFFSET + 2)
 
 
 
@@ -180,10 +180,7 @@ static int v4l2_overlay_ioctl(int fd, int req, void *arg, const char* msg)
     ret = ioctl(fd, req, arg);
     if (ret < 0) {
         error(fd, msg);
-        LOGE("[%d]%s: %s reg=%d, msg=%d, return 0!",
-             __LINE__, __FILE__, __FUNCTION__, req, msg);
-        return 0;
-        //return -1;
+        return -1;
     }
     return 0;
 }
@@ -305,14 +302,14 @@ int v4l2_overlay_set_position(int fd, int32_t x, int32_t y, int32_t w, int32_t h
     if (ret)
        return ret;
     LOGI("v4l2_overlay_set_position:: w=%d h=%d", format.fmt.win.w.width, format.fmt.win.w.height);
-
+   
     configure_window(&format.fmt.win, w, h, x, y);
 
     format.type = V4L2_BUF_TYPE_VIDEO_OVERLAY;
     ret = v4l2_overlay_ioctl(fd, VIDIOC_S_FMT, &format,
                              "set v4l2_overlay format");
     LOGI("v4l2_overlay_set_position:: w=%d h=%d", format.fmt.win.w.width, format.fmt.win.w.height);
-
+    
     if (ret)
        return ret;
     v4l2_overlay_dump_state(fd);
@@ -377,7 +374,6 @@ int v4l2_overlay_set_rotation(int fd, int degree, int step)
     ctrl.id = V4L2_CID_ROTATE;
     ctrl.value = degree;
     ret = v4l2_overlay_ioctl(fd, VIDIOC_S_CTRL, &ctrl, "set rotation");
-    LOGE("[%d]%s: %s value=%d",  __LINE__, __FILE__, __FUNCTION__, ctrl.value);
 
     return ret;
 }

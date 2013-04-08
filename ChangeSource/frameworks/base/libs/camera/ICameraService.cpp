@@ -34,16 +34,35 @@ public:
     {
     }
 
-    // connect to camera service
-    virtual sp<ICamera> connect(const sp<ICameraClient>& cameraClient)
+    // get number of cameras available
+    virtual int32_t getNumberOfCameras()
     {
         Parcel data, reply;
-        LOGD("%d: %s() ENTER", __LINE__, __FUNCTION__);
+        data.writeInterfaceToken(ICameraService::getInterfaceDescriptor());
+        remote()->transact(BnCameraService::GET_NUMBER_OF_CAMERAS, data, &reply);
+        return reply.readInt32();
+    }
+
+    // get information about a camera
+    virtual status_t getCameraInfo(int cameraId,
+                                   struct CameraInfo* cameraInfo) {
+        Parcel data, reply;
+        data.writeInterfaceToken(ICameraService::getInterfaceDescriptor());
+        data.writeInt32(cameraId);
+        remote()->transact(BnCameraService::GET_CAMERA_INFO, data, &reply);
+        cameraInfo->facing = reply.readInt32();
+        cameraInfo->orientation = reply.readInt32();
+        return reply.readInt32();
+    }
+
+    // connect to camera service
+    virtual sp<ICamera> connect(const sp<ICameraClient>& cameraClient, int cameraId)
+    {
+        Parcel data, reply;
         data.writeInterfaceToken(ICameraService::getInterfaceDescriptor());
         data.writeStrongBinder(cameraClient->asBinder());
-        LOGD("%d: %s() BEFORE CONNECT", __LINE__, __FUNCTION__);
+        data.writeInt32(cameraId);
         remote()->transact(BnCameraService::CONNECT, data, &reply);
-        LOGD("%d: %s() AFTER ENTER", __LINE__, __FUNCTION__);
         return interface_cast<ICamera>(reply.readStrongBinder());
     }
 };
@@ -55,22 +74,30 @@ IMPLEMENT_META_INTERFACE(CameraService, "android.hardware.ICameraService");
 status_t BnCameraService::onTransact(
     uint32_t code, const Parcel& data, Parcel* reply, uint32_t flags)
 {
-    LOGD("%d: %s() ENTER code=%d", __LINE__, __FUNCTION__, code);
     switch(code) {
-        case CONNECT: {
-            LOGD("%d: %s() ENTER1 code=%d", __LINE__, __FUNCTION__, code);
+        case GET_NUMBER_OF_CAMERAS: {
             CHECK_INTERFACE(ICameraService, data, reply);
-            LOGD("%d: %s() connect debug code=%d", __LINE__, __FUNCTION__, code);
+            reply->writeInt32(getNumberOfCameras());
+            return NO_ERROR;
+        } break;
+        case GET_CAMERA_INFO: {
+            CHECK_INTERFACE(ICameraService, data, reply);
+            CameraInfo cameraInfo;
+            memset(&cameraInfo, 0, sizeof(cameraInfo));
+            status_t result = getCameraInfo(data.readInt32(), &cameraInfo);
+            reply->writeInt32(cameraInfo.facing);
+            reply->writeInt32(cameraInfo.orientation);
+            reply->writeInt32(result);
+            return NO_ERROR;
+        } break;
+        case CONNECT: {
+            CHECK_INTERFACE(ICameraService, data, reply);
             sp<ICameraClient> cameraClient = interface_cast<ICameraClient>(data.readStrongBinder());
-            LOGD("%d: %s() connect debug code=%d", __LINE__, __FUNCTION__, code);
-            sp<ICamera> camera = connect(cameraClient);
-            LOGD("%d: %s() connect debug code=%d", __LINE__, __FUNCTION__, code);
+            sp<ICamera> camera = connect(cameraClient, data.readInt32());
             reply->writeStrongBinder(camera->asBinder());
-            LOGD("%d: %s() ENTER code=%d", __LINE__, __FUNCTION__, code);
             return NO_ERROR;
         } break;
         default:
-            LOGD("%d: %s() ENTER code=%d", __LINE__, __FUNCTION__, code);
             return BBinder::onTransact(code, data, reply, flags);
     }
 }

@@ -132,7 +132,6 @@ public:
      * Returns the number of image encoding quality levels supported.
      */
     Vector<int> getImageEncodingQualityLevels(int cameraId) const;
-    Vector<int> getImageEncodingQualityLevels() const;
 
 private:
     MediaProfiles& operator=(const MediaProfiles&);  // Don't call me

@@ -1009,7 +1009,7 @@ status_t StagefrightRecorder::setupCameraSource() {
 
     int64_t token = IPCThreadState::self()->clearCallingIdentity();
     if (mCamera == 0) {
-        mCamera = Camera::connect();//mCameraId);
+        mCamera = Camera::connect(mCameraId);
         if (mCamera == 0) {
             LOGE("Camera connection could not be established.");
             return -EBUSY;
@@ -1129,7 +1129,7 @@ status_t StagefrightRecorder::setupVideoEncoder(sp<MediaSource> *source) {
     enc_meta->setInt32(kKeyIFramesInterval, mIFramesIntervalSec);
     enc_meta->setInt32(kKeyStride, stride);
     enc_meta->setInt32(kKeySliceHeight, sliceHeight);
-    colorFormat = OMX_COLOR_FormatYCbYCr; //force to ycbcr
+    colorFormat = OMX_COLOR_FormatCbYCrY; // OMX_COLOR_FormatYCbYCr; //force to ycbcr
     enc_meta->setInt32(kKeyColorFormat, colorFormat);
 #if defined (OMAP_ENHANCEMENT) && defined (TARGET_OMAP4)
     enc_meta->setInt32(kKeyPaddedWidth, paddedWidth);
@@ -1313,7 +1313,7 @@ status_t StagefrightRecorder::reset() {
     mVideoBitRate  = 192000;
     mSampleRate    = 8000;
     mAudioChannels = 1;
-    mAudioBitRate  = 12200;
+    mAudioBitRate  = 48000; //12200;
     mInterleaveDurationUs = 0;
     mIFramesIntervalSec = 1;
     mAudioSourceNode = 0;

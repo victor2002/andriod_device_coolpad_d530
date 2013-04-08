@@ -30,6 +30,12 @@ const char CameraParameters::KEY_PREVIEW_FORMAT[] = "preview-format";
 const char CameraParameters::KEY_SUPPORTED_PREVIEW_FORMATS[] = "preview-format-values";
 const char CameraParameters::KEY_PREVIEW_FRAME_RATE[] = "preview-frame-rate";
 const char CameraParameters::KEY_SUPPORTED_PREVIEW_FRAME_RATES[] = "preview-frame-rate-values";
+const char CameraParameters::KEY_PREVIEW_FPS_RANGE[] = "preview-fps-range";
+const char CameraParameters::KEY_SUPPORTED_PREVIEW_FPS_RANGE[] = "preview-fps-range-values";
+const char CameraParameters::KEY_PREVIEW_FRAME_RATE_MODE[] = "preview-frame-rate-mode";
+const char CameraParameters::KEY_SUPPORTED_PREVIEW_FRAME_RATE_MODES[] = "preview-frame-rate-modes";
+const char CameraParameters::KEY_PREVIEW_FRAME_RATE_AUTO_MODE[] = "frame-rate-auto";
+const char CameraParameters::KEY_PREVIEW_FRAME_RATE_FIXED_MODE[] = "frame-rate-fixed";
 const char CameraParameters::KEY_PICTURE_SIZE[] = "picture-size";
 const char CameraParameters::KEY_SUPPORTED_PICTURE_SIZES[] = "picture-size-values";
 const char CameraParameters::KEY_PICTURE_FORMAT[] = "picture-format";
@@ -49,6 +55,10 @@ const char CameraParameters::KEY_WHITE_BALANCE[] = "whitebalance";
 const char CameraParameters::KEY_SUPPORTED_WHITE_BALANCE[] = "whitebalance-values";
 const char CameraParameters::KEY_EFFECT[] = "effect";
 const char CameraParameters::KEY_SUPPORTED_EFFECTS[] = "effect-values";
+const char CameraParameters::KEY_TOUCH_AF_AEC[] = "touch-af-aec";
+const char CameraParameters::KEY_SUPPORTED_TOUCH_AF_AEC[] = "touch-af-aec-values";
+const char CameraParameters::KEY_TOUCH_INDEX_AEC[] = "touch-index-aec";
+const char CameraParameters::KEY_TOUCH_INDEX_AF[] = "touch-index-af";
 const char CameraParameters::KEY_ANTIBANDING[] = "antibanding";
 const char CameraParameters::KEY_SUPPORTED_ANTIBANDING[] = "antibanding-values";
 const char CameraParameters::KEY_SCENE_MODE[] = "scene-mode";
@@ -69,8 +79,16 @@ const char CameraParameters::KEY_MAX_ZOOM[] = "max-zoom";
 const char CameraParameters::KEY_ZOOM_RATIOS[] = "zoom-ratios";
 const char CameraParameters::KEY_ZOOM_SUPPORTED[] = "zoom-supported";
 const char CameraParameters::KEY_SMOOTH_ZOOM_SUPPORTED[] = "smooth-zoom-supported";
+const char CameraParameters::KEY_FOCUS_DISTANCES[] = "focus-distances";
+const char CameraParameters::KEY_VIDEO_FRAME_FORMAT[] = "video-frame-format";
+const char CameraParameters::KEY_CAF[] = "continuous-af";
+const char CameraParameters::KEY_CONTINUOUS_AF[] = "continuous-af";
+const char CameraParameters::KEY_SUPPORTED_CAF[] = "continuous-af-values";
+const char CameraParameters::KEY_SUPPORTED_CONTINUOUS_AF[] = "continuous-af-values";
+const char CameraParameters::KEY_VIDEO_SIZE[] = "video-size";
 
 const char CameraParameters::TRUE[] = "true";
+const char CameraParameters::FOCUS_DISTANCE_INFINITY[] = "Infinity";
 
 // Values for white balance settings.
 const char CameraParameters::WHITE_BALANCE_AUTO[] = "auto";
@@ -92,6 +110,13 @@ const char CameraParameters::EFFECT_POSTERIZE[] = "posterize";
 const char CameraParameters::EFFECT_WHITEBOARD[] = "whiteboard";
 const char CameraParameters::EFFECT_BLACKBOARD[] = "blackboard";
 const char CameraParameters::EFFECT_AQUA[] = "aqua";
+const char CameraParameters::EFFECT_NEGATIVE_SEPIA[] = "negative-sepia";
+const char CameraParameters::EFFECT_PASTEL[] = "pastel";
+const char CameraParameters::EFFECT_BLUE[] = "blue";
+
+// Values for auto exposure settings.
+const char CameraParameters::TOUCH_AF_AEC_OFF[] = "touch-off";
+const char CameraParameters::TOUCH_AF_AEC_ON[] = "touch-on";
 
 // Values for antibanding settings.
 const char CameraParameters::ANTIBANDING_AUTO[] = "auto";
@@ -123,13 +148,19 @@ const char CameraParameters::SCENE_MODE_SPORTS[] = "sports";
 const char CameraParameters::SCENE_MODE_PARTY[] = "party";
 const char CameraParameters::SCENE_MODE_CANDLELIGHT[] = "candlelight";
 const char CameraParameters::SCENE_MODE_BARCODE[] = "barcode";
+const char CameraParameters::SCENE_MODE_BACKLIGHT[] = "backlight";
+const char CameraParameters::SCENE_MODE_FLOWERS[] = "flowers";
+const char CameraParameters::SCENE_MODE_AR[] = "AR";
 
 // Formats for setPreviewFormat and setPictureFormat.
 const char CameraParameters::PIXEL_FORMAT_YUV422SP[] = "yuv422sp";
 const char CameraParameters::PIXEL_FORMAT_YUV420SP[] = "yuv420sp";
+const char CameraParameters::PIXEL_FORMAT_YUV420SP_ADRENO[] = "yuv420sp-adreno";
+const char CameraParameters::PIXEL_FORMAT_YUV420P[] = "yuv420p";
 const char CameraParameters::PIXEL_FORMAT_YUV422I[] = "yuv422i-yuyv";
 const char CameraParameters::PIXEL_FORMAT_RGB565[] = "rgb565";
 const char CameraParameters::PIXEL_FORMAT_JPEG[] = "jpeg";
+const char CameraParameters::PIXEL_FORMAT_RAW[] = "raw";
 
 // Values for focus mode settings.
 const char CameraParameters::FOCUS_MODE_AUTO[] = "auto";
@@ -137,7 +168,119 @@ const char CameraParameters::FOCUS_MODE_INFINITY[] = "infinity";
 const char CameraParameters::FOCUS_MODE_MACRO[] = "macro";
 const char CameraParameters::FOCUS_MODE_FIXED[] = "fixed";
 const char CameraParameters::FOCUS_MODE_EDOF[] = "edof";
-const char CameraParameters::SET_OVERLAY_COLORKEY[] = "overlaycolorkey";
+const char CameraParameters::FOCUS_MODE_NORMAL[] = "normal";
+const char CameraParameters::FOCUS_MODE_CONTINUOUS_VIDEO[] = "continuous-video";
+const char CameraParameters::FOCUS_MODE_CONTINUOUS_CAMERA[] = "continuous-camera";
+
+const char CameraParameters::KEY_SUPPORTED_THUMBNAIL_SIZES[] = "jpeg-thumbnail-size-values";
+const char CameraParameters::KEY_GPS_LATITUDE_REF[] = "gps-latitude-ref";
+const char CameraParameters::KEY_GPS_LONGITUDE_REF[] = "gps-longitude-ref";
+const char CameraParameters::KEY_GPS_ALTITUDE_REF[] = "gps-altitude-ref";
+const char CameraParameters::KEY_GPS_STATUS[] = "gps-status";
+
+const char CameraParameters::KEY_EXIF_DATETIME[] = "exif-datetime";
+const char CameraParameters::KEY_AUTO_EXPOSURE[] = "auto-exposure";
+const char CameraParameters::KEY_SUPPORTED_AUTO_EXPOSURE[] = "auto-exposure-values";
+
+const char CameraParameters::KEY_ISO_MODE[] = "iso";
+const char CameraParameters::KEY_SUPPORTED_ISO_MODES[] = "iso-values";
+const char CameraParameters::KEY_LENSSHADE[] = "lensshade";
+const char CameraParameters::KEY_SUPPORTED_LENSSHADE_MODES[] = "lensshade-values";
+const char CameraParameters::KEY_SHARPNESS[] = "sharpness";
+const char CameraParameters::KEY_MAX_SHARPNESS[] = "max-sharpness";
+const char CameraParameters::KEY_CONTRAST[] = "contrast";
+const char CameraParameters::KEY_MAX_CONTRAST[] = "max-contrast";
+const char CameraParameters::KEY_SATURATION[] = "saturation";
+const char CameraParameters::KEY_MAX_SATURATION[] = "max-saturation";
+
+const char CameraParameters::KEY_FACE_DETECTION[] = "face-detection";
+const char CameraParameters::KEY_SUPPORTED_FACE_DETECTION[] = "face-detection-values";
+
+const char CameraParameters::KEY_SCENE_DETECT[] = "scene-detect";
+const char CameraParameters::KEY_SUPPORTED_SCENE_DETECT[] = "scene-detect-values";
+
+const char CameraParameters::KEY_SELECTABLE_ZONE_AF[] = "selectable-zone-af";
+const char CameraParameters::KEY_SUPPORTED_SELECTABLE_ZONE_AF[] = "selectable-zone-af-values";
+const char CameraParameters::KEY_SHUTTER_SOUND[] = "shutter-sound";
+const char CameraParameters::KEY_BRIGHTNESS_MODE[] = "brightness-mode";
+
+const char CameraParameters::KEY_HISTOGRAM[] = "histogram";
+const char CameraParameters::KEY_SUPPORTED_HISTOGRAM_MODES[] = "histogram-values";
+//Values for Histogram Shading
+const char CameraParameters::HISTOGRAM_ENABLE[] = "enable";
+const char CameraParameters::HISTOGRAM_DISABLE[] = "disable";
+
+const char CameraParameters::KEY_SKIN_TONE_ENHANCEMENT[] = "skinToneEnhancement";
+const char CameraParameters::KEY_SUPPORTED_SKIN_TONE_ENHANCEMENT_MODES[] = "skinToneEnhancement-values";
+//Values for Skin Tone Enhancement Modes
+const char CameraParameters::SKIN_TONE_ENHANCEMENT_ENABLE[] = "enable";
+const char CameraParameters::SKIN_TONE_ENHANCEMENT_DISABLE[] = "disable";
+
+const char CameraParameters::SELECTABLE_ZONE_AF_AUTO[] = "auto";
+const char CameraParameters::SELECTABLE_ZONE_AF_SPOT_METERING[] = "spot-metering";
+const char CameraParameters::SELECTABLE_ZONE_AF_CENTER_WEIGHTED[] = "center-weighted";
+const char CameraParameters::SELECTABLE_ZONE_AF_FRAME_AVERAGE[] = "frame-average";
+
+// Values for Face Detection settings.
+const char CameraParameters::FACE_DETECTION_OFF[] = "off";
+const char CameraParameters::FACE_DETECTION_ON[] = "on";
+
+// Values for auto scene detection settings.
+const char CameraParameters::SCENE_DETECT_OFF[] = "off";
+const char CameraParameters::SCENE_DETECT_ON[] = "on";
+
+// Values for auto exposure settings.
+const char CameraParameters::AUTO_EXPOSURE_FRAME_AVG[] = "frame-average";
+const char CameraParameters::AUTO_EXPOSURE_CENTER_WEIGHTED[] = "center-weighted";
+const char CameraParameters::AUTO_EXPOSURE_SPOT_METERING[] = "spot-metering";
+
+ // Values for ISO Settings
+const char CameraParameters::ISO_AUTO[] = "auto";
+const char CameraParameters::ISO_HJR[] = "ISO_HJR";
+const char CameraParameters::ISO_100[] = "ISO100";
+const char CameraParameters::ISO_200[] = "ISO200";
+const char CameraParameters::ISO_400[] = "ISO400";
+const char CameraParameters::ISO_800[] = "ISO800";
+const char CameraParameters::ISO_1600[] = "ISO1600";
+
+ //Values for Lens Shading
+const char CameraParameters::LENSSHADE_ENABLE[] = "enable";
+const char CameraParameters::LENSSHADE_DISABLE[] = "disable";
+
+
+//Values for Continuous AF
+const char CameraParameters::CAF_OFF[] = "caf-off";
+const char CameraParameters::CAF_ON[] = "caf-on";
+//Same, for CodeAurora-based blobs
+const char CameraParameters::CONTINUOUS_AF_OFF[] = "caf-off";
+const char CameraParameters::CONTINUOUS_AF_ON[] = "caf-on";
+
+//LGE Victor
+const char CameraParameters::FOCUS_MODE_MANUAL[] = "manual";
+const char CameraParameters::KEY_MANUAL_FOCUS[] = "manual-focus";
+const char CameraParameters::KEY_LUMA_ADAPTION[] = "luma-adaption";
+const char CameraParameters::KEY_VT_MODE[] = "vt-mode";
+
+#ifdef CAF_CAMERA_GB_REL
+static const char* portrait = "portrait";
+static const char* landscape = "landscape";
+
+int CameraParameters::getOrientation() const
+{
+    const char* orientation = get("orientation");
+    if (orientation && !strcmp(orientation, portrait))
+        return CAMERA_ORIENTATION_PORTRAIT;
+    return CAMERA_ORIENTATION_LANDSCAPE;
+}
+void CameraParameters::setOrientation(int orientation)
+{
+    if (orientation == CAMERA_ORIENTATION_PORTRAIT) {
+        set("orientation", portrait);
+    } else {
+         set("orientation", landscape);
+    }
+}
+#endif
 
 CameraParameters::CameraParameters()
                 : mMap()
@@ -231,11 +374,18 @@ void CameraParameters::setFloat(const char *key, float value)
     set(key, str);
 }
 
+//#define BOARD_USE_FROYO_LIBCAMERA
 const char *CameraParameters::get(const char *key) const
 {
+    #ifdef BOARD_USE_FROYO_LIBCAMERA
+    LOGE("CameraParameters::get key=%s", key);
+    #endif
     String8 v = mMap.valueFor(String8(key));
     if (v.length() == 0)
         return 0;
+    #ifdef BOARD_USE_FROYO_LIBCAMERA
+    LOGE("[%d]CameraParameters::get key=%s", __LINE__, v.string());
+    #endif
     return v.string();
 }
 
@@ -259,22 +409,55 @@ void CameraParameters::remove(const char *key)
     mMap.removeItem(String8(key));
 }
 
-static int parse_size(const char *str, int &width, int &height)
+// Parse string like "640x480" or "10000,20000"
+static int parse_pair(const char *str, int *first, int *second, char delim,
+                      char **endptr = NULL)
 {
-    // Find the width.
+    // Find the first integer.
     char *end;
     int w = (int)strtol(str, &end, 10);
-    // If an 'x' does not immediately follow, give up.
-    if (*end != 'x')
+    // If a delimeter does not immediately follow, give up.
+    if (*end != delim) {
+        LOGE("Cannot find delimeter (%c) in str=%s", delim, str);
         return -1;
+    }
 
-    // Find the height, immediately after the 'x'.
-    int h = (int)strtol(end+1, 0, 10);
+    // Find the second integer, immediately after the delimeter.
+    int h = (int)strtol(end+1, &end, 10);
 
-    width = w;
-    height = h;
+    *first = w;
+    *second = h;
+
+    if (endptr) {
+        *endptr = end;
+    }
 
     return 0;
+}
+
+static void parseSizesList(const char *sizesStr, Vector<Size> &sizes)
+{
+    if (sizesStr == 0) {
+        return;
+    }
+
+    char *sizeStartPtr = (char *)sizesStr;
+
+    while (true) {
+        int width, height;
+        int success = parse_pair(sizeStartPtr, &width, &height, 'x',
+                                 &sizeStartPtr);
+        if (success == -1 || (*sizeStartPtr != ',' && *sizeStartPtr != '\0')) {
+            LOGE("Picture sizes string \"%s\" contains invalid character.", sizesStr);
+            return;
+        }
+        sizes.push(Size(width, height));
+
+        if (*sizeStartPtr == '\0') {
+            return;
+        }
+        sizeStartPtr++;
+    }
 }
 
 void CameraParameters::setPreviewSize(int width, int height)
@@ -286,19 +469,39 @@ void CameraParameters::setPreviewSize(int width, int height)
 
 void CameraParameters::getPreviewSize(int *width, int *height) const
 {
-    *width = -1;
-    *height = -1;
-
+    *width = *height = -1;
     // Get the current string, if it doesn't exist, leave the -1x-1
     const char *p = get(KEY_PREVIEW_SIZE);
-    if (p == 0)
-        return;
+    if (p == 0)  return;
+    parse_pair(p, width, height, 'x');
+}
 
-    int w, h;
-    if (parse_size(p, w, h) == 0) {
-        *width = w;
-        *height = h;
-    }
+void CameraParameters::getSupportedPreviewSizes(Vector<Size> &sizes) const
+{
+    const char *previewSizesStr = get(KEY_SUPPORTED_PREVIEW_SIZES);
+    parseSizesList(previewSizesStr, sizes);
+}
+
+void CameraParameters::setVideoSize(int width, int height)
+{
+    char str[32];
+    sprintf(str, "%dx%d", width, height);
+    set(KEY_VIDEO_SIZE, str);
+}
+
+void CameraParameters::getVideoSize(int *width, int *height) const
+{
+    *width = *height = -1;
+    const char *p = get(KEY_VIDEO_SIZE);
+    if (p == 0) return;
+    parse_pair(p, width, height, 'x');
+}
+
+void CameraParameters::setPreviewFpsRange(int minFPS, int maxFPS)
+{
+    char str[32];
+    sprintf(str,"%d,%d",minFPS,maxFPS);
+    set(KEY_PREVIEW_FPS_RANGE,str);
 }
 
 void CameraParameters::setPreviewFrameRate(int fps)
@@ -309,6 +512,24 @@ void CameraParameters::setPreviewFrameRate(int fps)
 int CameraParameters::getPreviewFrameRate() const
 {
     return getInt(KEY_PREVIEW_FRAME_RATE);
+}
+
+void CameraParameters::getPreviewFpsRange(int *min_fps, int *max_fps) const
+{
+    *min_fps = *max_fps = -1;
+    const char *p = get(KEY_PREVIEW_FPS_RANGE);
+    if (p == 0) return;
+    parse_pair(p, min_fps, max_fps, ',');
+}
+
+void CameraParameters::setPreviewFrameRateMode(const char *mode)
+{
+    set(KEY_PREVIEW_FRAME_RATE_MODE, mode);
+}
+
+const char *CameraParameters::getPreviewFrameRateMode() const
+{
+    return get(KEY_PREVIEW_FRAME_RATE_MODE);
 }
 
 void CameraParameters::setPreviewFormat(const char *format)
@@ -330,19 +551,17 @@ void CameraParameters::setPictureSize(int width, int height)
 
 void CameraParameters::getPictureSize(int *width, int *height) const
 {
-    *width = -1;
-    *height = -1;
-
+    *width = *height = -1;
     // Get the current string, if it doesn't exist, leave the -1x-1
     const char *p = get(KEY_PICTURE_SIZE);
-    if (p == 0)
-        return;
+    if (p == 0) return;
+    parse_pair(p, width, height, 'x');
+}
 
-    int w, h;
-    if (parse_size(p, w, h) == 0) {
-        *width = w;
-        *height = h;
-    }
+void CameraParameters::getSupportedPictureSizes(Vector<Size> &sizes) const
+{
+    const char *pictureSizesStr = get(KEY_SUPPORTED_PICTURE_SIZES);
+    parseSizesList(pictureSizesStr, sizes);
 }
 
 void CameraParameters::setPictureFormat(const char *format)
@@ -365,6 +584,60 @@ void CameraParameters::dump() const
         LOGD("%s: %s\n", k.string(), v.string());
     }
 }
+
+void CameraParameters::setTouchIndexAec(int x, int y)
+{
+    char str[32];
+    sprintf(str, "%dx%d", x, y);
+    set(KEY_TOUCH_INDEX_AEC, str);
+}
+
+void CameraParameters::getTouchIndexAec(int *x, int *y) const
+{
+    *x = -1;
+    *y = -1;
+
+    // Get the current string, if it doesn't exist, leave the -1x-1
+    const char *p = get(KEY_TOUCH_INDEX_AEC);
+    if (p == 0)
+        return;
+
+    int tempX, tempY;
+    if (parse_pair(p, &tempX, &tempY, 'x') == 0) {
+        *x = tempX;
+        *y = tempY;
+    }
+}
+
+void CameraParameters::setTouchIndexAf(int x, int y)
+{
+    char str[32];
+    sprintf(str, "%dx%d", x, y);
+    set(KEY_TOUCH_INDEX_AF, str);
+}
+
+void CameraParameters::getTouchIndexAf(int *x, int *y) const
+{
+    *x = -1;
+    *y = -1;
+
+    // Get the current string, if it doesn't exist, leave the -1x-1
+    const char *p = get(KEY_TOUCH_INDEX_AF);
+    if (p == 0)
+        return;
+
+    int tempX, tempY;
+    if (parse_pair(p, &tempX, &tempY, 'x') == 0) {
+        *x = tempX;
+        *y = tempY;
+    }
+}
+
+// LGE Victor
+extern "C" status_t _ZNK7android16CameraParameters14getManualfocusEv () {
+    return NO_ERROR;
+}
+// LGE Victor
 
 status_t CameraParameters::dump(int fd, const Vector<String16>& args) const
 {

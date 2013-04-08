@@ -1,9 +1,6 @@
 ifeq ($(HARDWARE_OMX),true)
 
 LOCAL_PATH:= $(call my-dir)
-TI_OMAP_TOP   := $(ANDROID_BUILD_TOP)/hardware/ti/omap3-compat
-
-
 
 include $(CLEAR_VARS)
 
@@ -14,10 +11,6 @@ LOCAL_SRC_FILES:= \
 
 LOCAL_C_INCLUDES += \
 	$(TI_OMX_INCLUDES) \
-
-LOCAL_C_INCLUDES += \
-	$(TI_OMAP_TOP)/omx/system/src/openmax_il/omx_core/inc \
-
 
 LOCAL_SHARED_LIBRARIES := \
 	libdl \

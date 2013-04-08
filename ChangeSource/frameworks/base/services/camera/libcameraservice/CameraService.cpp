@@ -23,7 +23,7 @@
 #include <pthread.h>
 #include <unistd.h>
 #include <fcntl.h>
-
+#include <dlfcn.h>
 
 #include <binder/IPCThreadState.h>
 #include <binder/IServiceManager.h>
@@ -63,6 +63,7 @@ static void setLogLevel(int level) {
 
 // ----------------------------------------------------------------------------
 
+#define BOARD_USE_FROYO_LIBCAMERA 
 #ifdef BOARD_USE_FROYO_LIBCAMERA
 struct camera_size_type {
     int width;
@@ -83,7 +84,7 @@ static int getCallingUid() {
     return IPCThreadState::self()->getCallingUid();
 }
 
-#if defined(BOARD_USE_FROYO_LIBCAMERA) || defined(BOARD_HAVE_HTC_FFC)
+#if defined(BOARD_HAVE_HTC_FFC)
 #define HTC_SWITCH_CAMERA_FILE_PATH "/sys/android_camera2/htcwc"
 static void htcCameraSwitch(int cameraId)
 {
@@ -222,7 +223,7 @@ sp<ICamera> CameraService::connect(
         return NULL;
     }
 
-#if defined(BOARD_USE_FROYO_LIBCAMERA) || defined(BOARD_HAVE_HTC_FFC)
+#if defined(BOARD_HAVE_HTC_FFC)
     htcCameraSwitch(cameraId);
 #endif
     sp<CameraHardwareInterface> hardware = HAL_openCameraHardware(cameraId);
@@ -1280,16 +1281,26 @@ status_t CameraService::Client::sendCommand(int32_t cmd, int32_t arg1, int32_t a
         case CAMERA_CMD_SET_DISPLAY_ORIENTATION:
             // The orientation cannot be set during preview.
             if (mHardware->previewEnabled()) {
+                LOGE("sendCommand (line %d)", __LINE__);
+                #ifdef BOARD_USE_FROYO_LIBCAMERA
+                return OK;
+                #else
                 return INVALID_OPERATION;
+                #endif
             }
+            LOGE("sendCommand (line %d)", __LINE__);
             // Mirror the preview if the camera is front-facing.
             orientation = getOrientation(arg1, mCameraFacing == CAMERA_FACING_FRONT);
+            LOGE("sendCommand (line %d) %d", __LINE__, orientation);
             if (orientation == -1) return BAD_VALUE;
+            LOGE("sendCommand (line %d)", __LINE__);
 
             if (mOrientation != orientation) {
                 mOrientation = orientation;
+                LOGE("sendCommand (line %d)", __LINE__);
                 if (mOverlayRef != 0) mOrientationChanged = true;
             }
+            LOGE("sendCommand (line %d)", __LINE__);
             return OK;
 
 #ifdef CAF_CAMERA_GB_REL
@@ -1414,7 +1425,10 @@ void CameraService::Client::notifyCallback(int32_t msgType, int32_t ext1,
 
     sp<Client> client = getClientFromCookie(user);
     if (client == 0) return;
+     LOGE("[%d]lockIfMessageWanted1", __LINE__);
     if (!client->lockIfMessageWanted(msgType)) return;
+     LOGE("[%d]lockIfMessageWanted1", __LINE__);
+
 
     switch (msgType) {
         case CAMERA_MSG_SHUTTER:
@@ -1431,13 +1445,16 @@ void CameraService::Client::notifyCallback(int32_t msgType, int32_t ext1,
     }
 }
 
+extern "C" char *dlerror(void);
 void CameraService::Client::dataCallback(int32_t msgType,
         const sp<IMemory>& dataPtr, void* user) {
     LOG2("dataCallback(%d)", msgType);
 
     sp<Client> client = getClientFromCookie(user);
     if (client == 0) return;
+     LOGE("[%d]lockIfMessageWanted1, msgType = %d", __LINE__, msgType);
     if (!client->lockIfMessageWanted(msgType)) return;
+     LOGE("[%d]lockIfMessageWanted1, msgType = %d", __LINE__, msgType);
 #ifdef CAF_CAMERA_GB_REL
     //In case of CAMERA_MSG_COMPRESSED_IMAGE dataCallback,
     //when native_get_picture fails at driver, we need to
@@ -1464,9 +1481,12 @@ void CameraService::Client::dataCallback(int32_t msgType,
             client->handlePostview(dataPtr);
             break;
         case CAMERA_MSG_RAW_IMAGE:
+            dlerror(); //for solve issue Cannot get LCML handle
+            LOGE("[%d]%s CAMERA_MSG_RAW_IMAGE \n", __LINE__, __FUNCTION__);
             client->handleRawPicture(dataPtr);
             break;
         case CAMERA_MSG_COMPRESSED_IMAGE:
+            LOGE("[%d]%s CAMERA_MSG_COMPRESSED_IMAGE \n", __LINE__, __FUNCTION__);
             client->handleCompressedPicture(dataPtr);
             break;
 
@@ -1495,7 +1515,9 @@ void CameraService::Client::dataCallbackTimestamp(nsecs_t timestamp,
 
     sp<Client> client = getClientFromCookie(user);
     if (client == 0) return;
+     LOGE("[%d]lockIfMessageWanted1 %d", __LINE__, msgType);
     if (!client->lockIfMessageWanted(msgType)) return;
+     LOGE("[%d]lockIfMessageWanted1", __LINE__);
 
     if (dataPtr == 0) {
         LOGE("Null data returned in data with timestamp callback");
@@ -1545,6 +1567,7 @@ void CameraService::Client::handleShutter(image_rect_type *size
     if (c != 0) {
         mLock.unlock();
         c->notifyCallback(CAMERA_MSG_SHUTTER, 0, 0);
+        LOGE("[%d]lockIfMessageWanted1", __LINE__);
         if (!lockIfMessageWanted(CAMERA_MSG_SHUTTER)) return;
     }
 #endif
@@ -1676,6 +1699,7 @@ void CameraService::Client::handleRawPicture(const sp<IMemory>& mem) {
     sp<ICameraClient> c = mCameraClient;
     mLock.unlock();
     if (c != 0) {
+        LOGE("[%d]%s before callback RAW image add=\n", __LINE__, __FUNCTION__);
         c->dataCallback(CAMERA_MSG_RAW_IMAGE, mem);
     }
 }
@@ -1687,6 +1711,7 @@ void CameraService::Client::handleCompressedPicture(const sp<IMemory>& mem) {
     sp<ICameraClient> c = mCameraClient;
     mLock.unlock();
     if (c != 0) {
+        LOGE("[%d]%s before callback compress add=\n", __LINE__, __FUNCTION__);
         c->dataCallback(CAMERA_MSG_COMPRESSED_IMAGE, mem);
     }
 }
@@ -1883,10 +1908,12 @@ status_t CameraService::dump(int fd, const Vector<String16>& args) {
 
 #ifdef BOARD_USE_FROYO_LIBCAMERA
 static int getNumberOfCameras() {
+#ifdef BOARD_HAVE_HTC_FFC
     if (access(HTC_SWITCH_CAMERA_FILE_PATH, W_OK) == 0) {
         return 2;
     }
-    /* FIXME: Support non-HTC front camera */
+#endif    
+    /* FIXME: Support non-HTC front camera , D530 need it!!*/
     return 1;
 }
 
@@ -1900,15 +1927,17 @@ extern "C" void HAL_getCameraInfo(int cameraId, struct CameraInfo* cameraInfo)
     memcpy(cameraInfo, &sCameraInfo[cameraId], sizeof(CameraInfo));
 }
 
-extern "C" sp<CameraHardwareInterface> openCameraHardware(int cameraId);
+//extern "C" sp<CameraHardwareInterface> openCameraHardware(int cameraId);
+extern "C" sp<CameraHardwareInterface> openCameraHardware();
 
 extern "C" sp<CameraHardwareInterface> HAL_openCameraHardware(int cameraId)
 {
     LOGV("openCameraHardware: call createInstance");
-    return openCameraHardware(cameraId);
+    return openCameraHardware();
 }
 #endif
 #ifdef OMAP3_FW3A_LIBCAMERA
+#error aa
 static const CameraInfo sCameraInfo[] = {
     {
         CAMERA_FACING_BACK,

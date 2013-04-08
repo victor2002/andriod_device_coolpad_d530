@@ -711,17 +711,6 @@ int MediaProfiles::getCamcorderProfileParamByName(const char *name,
     return -1;
 }
 
-
-Vector<int> MediaProfiles::getImageEncodingQualityLevels() const
-{
-    Vector<int> result;
-    ImageEncodingQualityLevels *levels = findImageEncodingQualityLevels(0);
-    if (levels != NULL) {
-        result = levels->mLevels;  // copy out
-    }
-    return result;
-}
-
 Vector<int> MediaProfiles::getImageEncodingQualityLevels(int cameraId) const
 {
     Vector<int> result;
